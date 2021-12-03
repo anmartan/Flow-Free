@@ -9,11 +9,14 @@ namespace FlowFree
         private static GameManager instance;
         [SerializeField] private LevelManager levelManager;
         [SerializeField] private BoardManager boardManager;
-        
-        
-        // [TODO] Remove. Used for easy checks.
-        public int width = 5;
-        public int height = 5;
+        [SerializeField] private LevelCategory[] levelCategory; // [TODO] llevar a un config.cs?
+        [SerializeField] private Theme[] themes;                // algo que se encargue de estas cosas
+
+        public static GameManager Instance()
+        {
+            return instance;
+        }
+
 
         private void Awake()
         {
@@ -32,15 +35,23 @@ namespace FlowFree
 
         }
 
-        // [TODO]
-        // Remove this. It is temporally used, until the level loading is implemented.
-        private void Update()
+        private void Start()
         {
-            if(Input.GetKeyDown(KeyCode.Return))
-            {
-                boardManager.createBoard(width, height);
-            }
+            TextAsset text = levelCategory[0].packages[0].levels;
+            string str = text.ToString();
+            Debug.Log(str);
+            Map level = new Map();
+            if (level.loadMap(str))
+
+                boardManager.createBoard(level);
+            else Debug.LogError("Nivel incorrecto");
         }
 
+
+        // [TODO] getter pero bien
+        public Theme getActualTheme()
+        {
+            return themes[0];
+        }
     }
 }

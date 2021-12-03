@@ -165,8 +165,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   levelManager: {fileID: 0}
   boardManager: {fileID: 405818070}
-  width: 5
-  height: 6
+  levelCategory:
+  - {fileID: 11400000, guid: 45310c8c0687ca34686b8162a575b67a, type: 2}
+  themes:
+  - {fileID: 11400000, guid: ced1adac13588bd4faef33ae87ee487b, type: 2}
 --- !u!4 &919888634
 Transform:
   m_ObjectHideFlags: 0
@@ -217,7 +219,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -279,6 +281,22 @@ PrefabInstance:
       propertyPath: camera
       value: 
       objectReference: {fileID: 1823410594}
+    - target: {fileID: 853986636372757836, guid: 471594dd7a1aadd408870165fb41ead6, type: 3}
+      propertyPath: topMargin
+      value: 500
+      objectReference: {fileID: 0}
+    - target: {fileID: 853986636372757836, guid: 471594dd7a1aadd408870165fb41ead6, type: 3}
+      propertyPath: sideMargin
+      value: 150
+      objectReference: {fileID: 0}
+    - target: {fileID: 853986636372757836, guid: 471594dd7a1aadd408870165fb41ead6, type: 3}
+      propertyPath: bottomMargin
+      value: 750
+      objectReference: {fileID: 0}
+    - target: {fileID: 853986636372757836, guid: 471594dd7a1aadd408870165fb41ead6, type: 3}
+      propertyPath: verticalMargin
+      value: 100
+      objectReference: {fileID: 0}
     - target: {fileID: 853986636372757837, guid: 471594dd7a1aadd408870165fb41ead6, type: 3}
       propertyPath: m_RootOrder
       value: 2

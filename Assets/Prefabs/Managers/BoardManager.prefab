@@ -43,6 +43,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 730d00594de45de4193a0972a57d4789, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tile: {fileID: 2121352851836945845, guid: a5de132624c4dc4428019fd87fa1334d, type: 3}
-  grid: {fileID: 0}
   camera: {fileID: 0}
+  tile: {fileID: 2121352851836945845, guid: a5de132624c4dc4428019fd87fa1334d, type: 3}
+  maxHeight: 0.5
