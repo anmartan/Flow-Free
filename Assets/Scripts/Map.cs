@@ -7,7 +7,7 @@ public class Map
 
     public bool loadMap(string level)
     {
-        string[] splits = level.Split(';', '\n');
+        string[] splits = level.Split(';');
         string[] info = splits[0].Split(',');
 
         string[] size = info[0].Split(':');
@@ -42,16 +42,20 @@ public class Map
         return true;
     }
 
-    // [TODO] GETTERS
+    public int getWidth() { return width; }
+    public int getHeight() { return height; }
+    public int getLevelInPage() { return levelInPage; }
+    public int getFlowsNumber() { return flowsNumber; }
+    public List<Vector2>[] getFlows() { return flows; }
 
-    public int width, height;
+    private int width, height;
     // reservado
-    public int levelInPage;
-    public int flowsNumber;
+    private int levelInPage;
+    private int flowsNumber;
     // puentes
     // celdas huecas
     // muros
 
 
-    public List<Vector2>[] flows;
+    private List<Vector2>[] flows;
 }

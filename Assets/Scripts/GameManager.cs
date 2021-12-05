@@ -12,6 +12,10 @@ namespace FlowFree
         [SerializeField] private LevelCategory[] levelCategory; // [TODO] llevar a un config.cs?
         [SerializeField] private Theme[] themes;                // algo que se encargue de estas cosas
 
+        public int levelCat = 0;
+        public int levelPack = 0;
+        public int levelNum = 0;
+
         public static GameManager Instance()
         {
             return instance;
@@ -37,17 +41,20 @@ namespace FlowFree
 
         private void Start()
         {
-            TextAsset text = levelCategory[0].packages[0].levels;
-            string str = text.ToString();
-            Debug.Log(str);
-            Map level = new Map();
-            if (level.loadMap(str))
-
-                boardManager.createBoard(level);
-            else Debug.LogError("Nivel incorrecto");
+            createLevel();
         }
 
+        private void createLevel()
+        {
+            TextAsset text = levelCategory[levelCat].packs[levelPack].levels;
+            string[] levels = text.ToString().Split('\n');
 
+
+            Map level = new Map();
+            if (level.loadMap(levels[levelNum]))    boardManager.createBoard(level);
+            else Debug.LogError("Nivel incorrecto");
+
+        }
         // [TODO] getter pero bien
         public Theme getActualTheme()
         {

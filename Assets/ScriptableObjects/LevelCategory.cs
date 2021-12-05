@@ -4,11 +4,10 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Flow/Level category", order = 0)]
 public class LevelCategory : ScriptableObject
 {
-	// [TODO] arreglar y comentar por favor
-	[Tooltip("Archivo que contiene los niveles")]
+	[Tooltip("Name of the category, that will appear in the level selection menu.")]
 	public string name;
 
-	[Tooltip("Nombre del package")]
-	public LevelPack[] packages;
+	[Tooltip("Packs that appear in this category.")]
+	public LevelPack[] packs;
 
 }

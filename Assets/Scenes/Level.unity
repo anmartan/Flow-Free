@@ -169,6 +169,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 45310c8c0687ca34686b8162a575b67a, type: 2}
   themes:
   - {fileID: 11400000, guid: ced1adac13588bd4faef33ae87ee487b, type: 2}
+  levelCat: 0
+  levelPack: 1
+  levelNum: 58
 --- !u!4 &919888634
 Transform:
   m_ObjectHideFlags: 0
@@ -278,6 +281,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 853986636372757836, guid: 471594dd7a1aadd408870165fb41ead6, type: 3}
+      propertyPath: tile
+      value: 
+      objectReference: {fileID: 5536901110090407428, guid: a5de132624c4dc4428019fd87fa1334d, type: 3}
+    - target: {fileID: 853986636372757836, guid: 471594dd7a1aadd408870165fb41ead6, type: 3}
       propertyPath: camera
       value: 
       objectReference: {fileID: 1823410594}
@@ -289,6 +296,10 @@ PrefabInstance:
       propertyPath: sideMargin
       value: 150
       objectReference: {fileID: 0}
+    - target: {fileID: 853986636372757836, guid: 471594dd7a1aadd408870165fb41ead6, type: 3}
+      propertyPath: sceneCamera
+      value: 
+      objectReference: {fileID: 1823410594}
     - target: {fileID: 853986636372757836, guid: 471594dd7a1aadd408870165fb41ead6, type: 3}
       propertyPath: bottomMargin
       value: 750
