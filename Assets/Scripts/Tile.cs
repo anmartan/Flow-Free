@@ -14,6 +14,8 @@ namespace FlowFree
         [Tooltip("Sprite used for drawing the circles in the needed tiles.")]
         [SerializeField] private SpriteRenderer circle;
 
+        [Tooltip("Sprite used for drawing the background square, which will be a specific color depending on the flow it contains.")]
+        [SerializeField] private SpriteRenderer background;
 
         /// <summary>
         /// Makes the tile have a circle, with the specified color.
@@ -29,34 +31,49 @@ namespace FlowFree
             }
         }
 
-
-        public void PutFlow(Color color, Vector2Int direction)
+        /// <summary>
+        /// Puts a flow, in the given direction with the given color.
+        /// It activates the entrance flow if it is the first time the tile is being used.
+        /// It activates the exit flow if the tile is being used for the second time, or if it has a circle (in which case, there can only be one flow).
+        /// </summary>
+        /// <param name="color">Color of the flow to be painted.</param>
+        /// <param name="direction">Direction in which the flow will be painted.</param>
+        public void AddFlow(Color color, Vector2Int direction)
         {
-            if(circle.enabled)
-            {
-                setFlow(exitFlow, color, direction);
-            }
-
-            else
-            {
-                // If it's the first time the tile is used, the entranceFlow is used.
-                // Otherwise, the exitFlow is used.
-                if (!entranceFlow.enabled)  setFlow(entranceFlow, color, direction);
-                else                        setFlow(exitFlow, color, direction);
-            }
+            if (circle.enabled || entranceFlow.enabled) setFlow(exitFlow, color, direction);
+            else setFlow(entranceFlow, color, direction);
         }
 
-
-
-        public bool hasCircle() { return circle.enabled; }
-
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="onlyExit"></param>
         public void clearFlow(bool onlyExit)
         {
             clearWay(exitFlow);
             if (!onlyExit) clearWay(entranceFlow);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public bool isCircle() { return circle.enabled; }
+
+        public void setBackgroundColor(Color color)
+        {
+            // Sets the background color
+            background.enabled = true;
+            color.a = 0.25f;
+            background.color = color;
+
+        }
+        public void removeBackgroundColor()
+        {
+            background.enabled = false;
+        }
+
+        //--------------------------------------------------------------------------//
 
         private void setFlow(SpriteRenderer flow, Color color, Vector2Int direction)
         {

@@ -25,9 +25,11 @@ namespace FlowFree
         private int[,] logicTiles;                      // logic representation of the board; -1 means the tile is not occupied, values in the range [0, map.flowsNumber - 1] represent one of the flows.
 
         private Vector2Int lastTileclicked;
+        private int lastFlowClicked;
         private bool touching;
 
-        private List<Vector2Int>[] actualFlowsList;     // The state of the flows, meaning the connected tiles depending on the level.
+        private List<Vector2Int>[] solution;            // The final solution to the puzzle.
+        private List<Vector2Int>[] currentFlowsList;    // The state of the flows, meaning the connected tiles depending on the level.
         private List<Vector2Int>[] previousFlowsList;   // The state before the last player movement, so that the player can undo the last movement.
                                                         // Also used when the player breaks one of the existing flows, crossing it with another one.
 
@@ -47,6 +49,18 @@ namespace FlowFree
             height = map.getHeight();
             tiles = new Tile[height, width];
             logicTiles = new int[height, width];
+
+            // Creates the lists that will containt information about the board: the final solution, the current state and the previous state.
+            solution = new List<Vector2Int>[map.getFlowsNumber()];
+            currentFlowsList = new List<Vector2Int>[map.getFlowsNumber()];
+            previousFlowsList = new List<Vector2Int>[map.getFlowsNumber()];
+
+            for (int i = 0; i < map.getFlowsNumber(); i++)
+            {
+                solution[i] = new List<Vector2Int>();
+                currentFlowsList[i] = new List<Vector2Int>();
+                previousFlowsList[i] = new List<Vector2Int>();
+            }
 
             // Destroys all of the tiles it saved previously. This should always be empty but,
             // Just in case, it's emptied before being used.
@@ -74,13 +88,14 @@ namespace FlowFree
             {
                 Color color = GameManager.Instance().getActualTheme().colors[i];
 
-                List<Vector2> flow = map.getFlows()[i];
-                tiles[(int)flow[0].x, (int)flow[0].y].PutCircle(color);
-                tiles[(int)flow[flow.Count - 1].x, (int)flow[flow.Count - 1].y].PutCircle(color);
+                solution[i] = map.getFlows()[i];
+
+                tiles[solution[i][0].x, solution[i][0].y].PutCircle(color);
+                tiles[solution[i][solution[i].Count - 1].x, solution[i][solution[i].Count - 1].y].PutCircle(color);
 
                 // Updates the tilesIndices value
-                logicTiles[(int)flow[0].x, (int)flow[0].y] = i;
-                logicTiles[(int)flow[flow.Count - 1].x, (int)flow[flow.Count - 1].y] = i;
+                logicTiles[solution[i][0].x, solution[i][0].y] = i;
+                logicTiles[solution[i][solution[i].Count - 1].x, solution[i][solution[i].Count - 1].y] = i;
             }
 
 
@@ -102,15 +117,6 @@ namespace FlowFree
             transform.Translate(new Vector3(-width * 0.5f * scale, height * 0.5f * scale));
             transform.localScale = new Vector3(scale, scale);
 
-            // The initial state of the game is an empty grid, with no flows drawn
-            actualFlowsList = new List<Vector2Int>[map.getFlowsNumber()];
-            previousFlowsList = new List<Vector2Int>[map.getFlowsNumber()];
-
-            for (int i = 0; i < map.getFlowsNumber(); i++)
-            {
-                actualFlowsList[i] = new List<Vector2Int>();
-                previousFlowsList[i] = new List<Vector2Int>();
-            }
         }
 
         private void Update()
@@ -133,70 +139,71 @@ namespace FlowFree
             // Calculates which tile the touch corresponds to.
             Vector2Int pos = getTile(touchPosition);
 
+            // If the touch has just started, take this into consideration:
+            // If an empty tile is touched, nothing happens.
+            // If a tile is touched and there was a flow coming out from that tile, the rest of the flow has to be dissolved.
             if (touch.phase == TouchPhase.Began)
             {
                 // What flow is being touched? If it is -1, it is not a valid input
                 int flowIndex = logicTiles[pos.x, pos.y];
                 if (flowIndex == -1) return;
 
+                lastFlowClicked = flowIndex;
+                // Removes the background color until the touch has finished
+                RemoveBackground();
+
                 // Checks if there was another flow with that color and dissolves it
-                if (actualFlowsList[flowIndex].Count > 0 || tiles[pos.x, pos.y].hasCircle())
+                if (currentFlowsList[flowIndex].Count > 0 || tiles[pos.x, pos.y].isCircle())
                 {
+                    saveState();
                     dissolveFlow(flowIndex, pos);
                 }
-                addFlow(flowIndex, pos);
+                addFlow(pos);
 
+                // Updates this values for later checks
                 lastTileclicked = pos;
                 touching = true;
             }
 
-            else if (touch.phase == TouchPhase.Moved && touching)
+            // If the touch is moving, and it comes from a valid point in the grid, take this into consideration:
+            // If it is not a valid movement (for any reason), nothing happens.
+            // If the flow cuts a part of itself, the flow has to be correctly dissolved.
+            // If the flow cuts another flow, it has to be correctly dissolved.
+            // The previous state cannot be destroyed, in case the player wants to undo their last movement.
+            else if (touch.phase == TouchPhase.Moved && touching && pos != lastTileclicked)
             {
-                if(pos != lastTileclicked)
+                // If this is not a valid movement, there is nothing to do.
+                if (!validMovement(pos)) return;
+
+                // If it is the first change, the state is saved so that it can be recovered later on, if the player wants to undo a movement
+                if (!boardChanged) saveState();
+
+                // If there is a flow prior to this movement, some part of the flow has to be dissolved.
+                int previousFlowIndex = logicTiles[pos.x, pos.y];
+                if (previousFlowIndex != -1 && !tiles[pos.x, pos.y].isCircle())
                 {
-                    // Uses the information of the last tile it came from, as it will be added to the same list.
-                    int flowIndex = logicTiles[lastTileclicked.x, lastTileclicked.y];
+                    // If the flow is the same color, it is removed until this position.
+                    int posInList = currentFlowsList[previousFlowIndex].IndexOf(pos);
 
-                    // Checks if there is another flow in this position; in that case, the flow below has to be dissolved
-                    int previousFlowIndex = logicTiles[pos.x, pos.y];
+                    // If it is another color, though, it has to be dissolved until the previous position, so that both flows do not share this tile.
+                    if (previousFlowIndex != lastFlowClicked) posInList--;
+                    dissolveFlow(previousFlowIndex, currentFlowsList[previousFlowIndex][posInList]);
 
-                    // If there is a circle of another color in the actual tile, the flow cannot grow.
-                    if (tiles[pos.x, pos.y].hasCircle() && flowIndex != previousFlowIndex) return;
-
-                    // If there is a flow prior to this movement, some part of the flow has to be dissolved
-
-                    /*
-                        if(previousFlowIndex != -1)
-                        {
-                            // If it is the same color, it has to be dissolved to this very position.
-                            // However, if it is a different color, it has to be dissolved until the tile before that one, or there would be two colors in the same tile.
-                            int posInList = actualFlowsList[previousFlowIndex].IndexOf(pos);
-                            if (previousFlowIndex != flowIndex) posInList--;
-
-                            dissolveFlow(previousFlowIndex, actualFlowsList[previousFlowIndex][posInList]);
-                        }
-                        else
-                        {
-                            // Calculates the direction in which the flow should grow.
-                            Vector2Int direction = pos - lastTileclicked;
-
-                            // Otherwise, the flow grows.
-                            addFlow(flowIndex, pos);
-                            drawFlow(flowIndex, pos, direction);
-                        }
-                    */
-
-                    // Calculates the direction in which the flow should grow.
-                    Vector2Int direction = pos - lastTileclicked;
-                    addFlow(flowIndex, pos);
-                    drawFlow(flowIndex, pos, direction);
-                    lastTileclicked = pos;
+                    if (previousFlowIndex != lastFlowClicked) updateFlow(pos);
                 }
+                else updateFlow(pos);
+                lastTileclicked = pos;
             }
 
+            // If the touch has finished (either because it was cancelled or becuased the player lifted their finger, take this into consideration:
+            // If there was any change in the flows, the number of movements has to increase.
+            // If there was any flow movement, the tiles have to change their background.
             else if(touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Ended)
             {
+                AddBackground();
+                if (StateChanged()) playerMovements++;
                 touching = false;
+                boardChanged = false;
             }
         }
 
@@ -221,9 +228,78 @@ namespace FlowFree
             return new Vector2Int(row, column);
         }
 
+        private void AddBackground()
+        {
+            List<Vector2Int> flow = currentFlowsList[lastFlowClicked];
+            if(flow.Count > 1)
+            {
+                for (int i = 0; i < flow.Count; i++)
+                    tiles[flow[i].x, flow[i].y].setBackgroundColor(GameManager.Instance().getActualTheme().colors[lastFlowClicked]);
+            }
+        }
+
+        private void RemoveBackground()
+        {
+            List<Vector2Int> flow = currentFlowsList[lastFlowClicked];
+
+            for (int i = 0; i < flow.Count; i++)
+                tiles[flow[i].x, flow[i].y].removeBackgroundColor();
+        }
+
+        private void saveState()
+        {
+            for (int i = 0; i < solution.Length; i++) 
+            {
+                previousFlowsList[i].Clear();
+                for(int j = 0; j < currentFlowsList[i].Count; j++)
+                {
+                    previousFlowsList[i].Add(currentFlowsList[i][j]);
+                }
+            }
+            boardChanged = true;
+        }
+        
+        // Only checks the last flow; it is the only one that can cause changes: if another one has changed, it is because this one has.
+        private bool StateChanged()
+        {
+            // If there was no change, the state has not changed (obviously).
+            if (!boardChanged) return false;
+
+            // If the flow only has one element, it is considered to be unchanged (as it has no effect in the game).
+            if (currentFlowsList[lastFlowClicked].Count <= 1 && previousFlowsList[lastFlowClicked].Count <= 1) return false;
+
+            // If the current flow and the previous one have different sizes, there has been some changes.
+            if (currentFlowsList[lastFlowClicked].Count != previousFlowsList[lastFlowClicked].Count) return true;
+
+            // If the flow changed the start, there may have been a change.
+            int startIndex = previousFlowsList[lastFlowClicked].IndexOf(currentFlowsList[lastFlowClicked][0]);
+
+            // If the previous flow does not contain the new one's start, the flow changed.
+            if (startIndex == -1) return true;
+
+            // If it is included, it needs to be in the same order (or inversed)
+            int size = currentFlowsList[lastFlowClicked].Count;
+            if (startIndex == 0)
+            {
+                for (int i = 0; i < size; i++)
+                {
+                    if (currentFlowsList[lastFlowClicked][i] != previousFlowsList[lastFlowClicked][i]) return true;
+                }
+            }
+            else
+            {
+                for (int i = 0; i < size; i++)
+                {
+                    if (currentFlowsList[lastFlowClicked][size - i] != previousFlowsList[lastFlowClicked][i]) return true;
+                }
+            }
+
+            return false;
+        }
+
         private void dissolveFlow(int flowIndex, Vector2Int lastTile)
         {
-            List<Vector2Int> flow = actualFlowsList[flowIndex];
+            List<Vector2Int> flow = currentFlowsList[flowIndex];
             int posInList = flow.IndexOf(lastTile);
 
             // If the touched tile is in the list, the whole list is not removed; only the part that came after touching that tile.
@@ -234,29 +310,55 @@ namespace FlowFree
                 Vector2Int pos = flow[i];
                 Tile tile = tiles[pos.x, pos.y];
                 tile.clearFlow(false);
-                if (!tile.hasCircle()) logicTiles[pos.x, pos.y] = -1;
+                if (!tile.isCircle()) logicTiles[pos.x, pos.y] = -1;
             }
             flow.RemoveRange(posInList + 1, flow.Count - (posInList + 1));
+            boardChanged = true;
         }
-
-        private void addFlow(int flowIndex, Vector2Int lastTile)
+        private void updateFlow(Vector2Int lastTile)
         {
-            List<Vector2Int> flow = actualFlowsList[flowIndex];
+            addFlow(lastTile);
+
+            // Calculates the direction in which the flow should grow.
+            Vector2Int direction = lastTile - lastTileclicked;
+            drawFlow(lastTile, direction);
+        }
+        private void addFlow(Vector2Int lastTile)
+        {
+            List<Vector2Int> flow = currentFlowsList[lastFlowClicked];
 
             if (flow.Contains(lastTile)) return;
 
             // Si no esta en la lista, lo anadimos y le ponemos el color
             flow.Add(lastTile);
-            logicTiles[lastTile.x, lastTile.y] = flowIndex;
+            logicTiles[lastTile.x, lastTile.y] = lastFlowClicked;
+            boardChanged = true;
         }
-
-        private void drawFlow(int flowIndex, Vector2Int tilePos, Vector2Int direction)
+        private void drawFlow(Vector2Int tilePos, Vector2Int direction)
         {
             Tile tile = tiles[tilePos.x, tilePos.y];
-            tile.PutFlow(GameManager.Instance().getActualTheme().colors[flowIndex], direction);
+            tile.AddFlow(GameManager.Instance().getActualTheme().colors[lastFlowClicked], direction);
 
             tile = tiles[tilePos.x - direction.x, tilePos.y - direction.y];
-            tile.PutFlow(GameManager.Instance().getActualTheme().colors[flowIndex], -direction);
+            tile.AddFlow(GameManager.Instance().getActualTheme().colors[lastFlowClicked], -direction);
+        }
+        private bool validMovement(Vector2Int pos)
+        {
+            int flowIndex = logicTiles[lastTileclicked.x, lastTileclicked.y];
+            // If there is more than one tile of distance between them, the movement is not valid
+            if ((lastTileclicked - pos).magnitude > 1) return false;
+
+            // If there is a circle of another color in the actual tile, the flow cannot grow.
+            if (tiles[pos.x, pos.y].isCircle() && flowIndex != logicTiles[pos.x, pos.y]) return false;
+
+            // If the flow has both circles covered, and the movement is not used to undo the flow, it is not a valid movement.
+            if (currentFlowsList[flowIndex].Contains(solution[flowIndex][0]) &&                              // Contains the first circle
+               currentFlowsList[flowIndex].Contains(solution[flowIndex][solution[flowIndex].Count - 1]) &&   // Contains the second circle
+               !currentFlowsList[flowIndex].Contains(pos))                                                   // Is not an "undo" movement
+                return false;
+
+            // If everything else was correct, the movement is a valid one.
+            return true;
         }
     }
     

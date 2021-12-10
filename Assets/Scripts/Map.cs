@@ -23,30 +23,29 @@ public class Map
 
         if (!int.TryParse(info[3], out flowsNumber)) return false;
 
-        flows = new List<Vector2>[flowsNumber];
+        flows = new List<Vector2Int>[flowsNumber];
 
         for (int i = 0; i < flowsNumber; i++)
         {
             string[] flowI = splits[i + 1].Split(',');
-            flows[i] = new List<Vector2>();
+            flows[i] = new List<Vector2Int>();
 
             for (int j = 0; j < flowI.Length; j++)
             {
                 int pos;
                 if (!int.TryParse(flowI[j], out pos)) return false;
 
-                flows[i].Add(new Vector2(pos % width, pos / height));
+                flows[i].Add(new Vector2Int(pos % width, pos / height));
             }
         }
 
         return true;
     }
-
     public int getWidth() { return width; }
     public int getHeight() { return height; }
     public int getLevelInPage() { return levelInPage; }
     public int getFlowsNumber() { return flowsNumber; }
-    public List<Vector2>[] getFlows() { return flows; }
+    public List<Vector2Int>[] getFlows() { return flows; }
 
     private int width, height;
     // reservado
@@ -57,5 +56,5 @@ public class Map
     // muros
 
 
-    private List<Vector2>[] flows;
+    private List<Vector2Int>[] flows;
 }
