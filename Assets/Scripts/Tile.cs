@@ -60,15 +60,19 @@ namespace FlowFree
         /// <returns></returns>
         public bool isCircle() { return circle.enabled; }
 
-        public void setBackgroundColor(Color color)
-        {
-            // Sets the background color
-            background.enabled = true;
-            color.a = 0.25f;
-            background.color = color;
+        public bool isFullyConnected() { return exitFlow.enabled; }
 
+        public void SetBackgroundColor(Color color)
+        {
+            if (exitFlow.enabled || entranceFlow.enabled)
+            {
+                // Sets the background color
+                background.enabled = true;
+                color.a = 0.25f;
+                background.color = color;
+            }
         }
-        public void removeBackgroundColor()
+        public void RemoveBackgroundColor()
         {
             background.enabled = false;
         }

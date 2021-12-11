@@ -7,36 +7,34 @@ namespace FlowFree
     public class BoardManager : MonoBehaviour
     {
         [Tooltip("Camera in the scene, used to scale the tiles of the grid.")]
-        [SerializeField] private Camera sceneCamera;     // Camera of the scene. Used for scaling the grid.
+        [SerializeField] private Camera sceneCamera;        // Camera of the scene. Used for scaling the grid.
 
         [Tooltip("Tile prefab. The grid will be filled with these.")]
-        [SerializeField] private Tile tile;             // Prefab of the tile that will be instantiated for creating the grid.
+        [SerializeField] private Tile tile;                 // Prefab of the tile that will be instantiated for creating the grid.
 
-        [Tooltip("Margin at both the top and bottom of the screen, used for the HUD, in pixels.")]
-        [SerializeField] private float verticalMargin;  // Margins left at both the top and bottom of the screen, for the HUD.
+        [Tooltip("Margin at the top of the screen, used for the HUD, in pixels.")]
+        [SerializeField] private GameObject topMargin;      // Margins left at both the top and bottom of the screen, for the HUD.
 
-        [Tooltip("Margin at each sides of the screen screen left unused by the board, in pixels.")]
-        [SerializeField] private float sideMargin;      // Margins left at both sides of the screen, so that the board doesn't occupy the whole screen.
+        [Tooltip("Margin at the bottom of the screen screen left unused by the board, in pixels.")]
+        [SerializeField] private GameObject bottomMargin;   // Margins left at both sides of the screen, so that the board doesn't occupy the whole screen.
 
-        private float scale;                            // scale of the board. Calculated when the board is created.
-        private int width, height;                      // width and height of the board (in tiles).
+        private int width, height;                          // width and height of the board (in tiles).
 
-        private Tile[,] tiles;                          // tiles array so that they can be accessed later on.
-        private int[,] logicTiles;                      // logic representation of the board; -1 means the tile is not occupied, values in the range [0, map.flowsNumber - 1] represent one of the flows.
+        private Tile[,] tiles;                              // tiles array so that they can be accessed later on.
+        private int[,] logicTiles;                          // logic representation of the board; -1 means the tile is not occupied, values in the range [0, map.flowsNumber - 1] represent one of the flows.
 
-        private Vector2Int lastTileclicked;
-        private int lastFlowClicked;
-        private bool touching;
+        private bool touching;                              // Whether therw is a touch being processed at the moment or not.
+        private int currentFlow;                            // The flow that is currently being touched.
+        private int previousFlow;                           // The flow that was touched in the last touch.
+        private Vector2Int lastTileclicked;                 // The last tile that was touched (or moved to, or released).
 
-        private List<Vector2Int>[] solution;            // The final solution to the puzzle.
-        private List<Vector2Int>[] currentFlowsList;    // The state of the flows, meaning the connected tiles depending on the level.
-        private List<Vector2Int>[] previousFlowsList;   // The state before the last player movement, so that the player can undo the last movement.
-                                                        // Also used when the player breaks one of the existing flows, crossing it with another one.
+        private List<Vector2Int>[] solution;                // The final solution to the puzzle.
+        private List<Vector2Int>[] currentFlowsList;        // The state of the flows, meaning the connected tiles depending on the level.
+        private List<Vector2Int>[] previousFlowsList;       // The state before the last player movement, so that the player can undo the last movement.
 
-        private bool boardChanged;                      // true if the board has changed with the last interaction; the state must be saved so it can be recovered later.
-        private int playerMovements;                    // The number of movements the player has used to solve the level. It changes in two situations:
-                                                        // When the player touches a flow (or a circle), different from the last one they touched (playerMovements++).
-                                                        // When the player undoes the last movement (playerMovements--).
+        private int playerMovements;                        // The number of movements the player has used to solve the level. It changes in two situations:
+                                                            // When the player touches a flow (or a circle), different from the last one they touched (playerMovements++).
+                                                            // When the player undoes the last movement (playerMovements--).
 
         /// <summary>
         /// Creates a board the player can interact with. Creates the tiles and sets the initial circles, with the corresponding colors.
@@ -62,20 +60,19 @@ namespace FlowFree
                 previousFlowsList[i] = new List<Vector2Int>();
             }
 
-            // Destroys all of the tiles it saved previously. This should always be empty but,
-            // Just in case, it's emptied before being used.
+            // Destroys all of the tiles it saved previously.
             for (int i = 0; i < transform.childCount; i++) Destroy(transform.GetChild(i).gameObject);
 
-            // Resets the scale, so that when the new pool of objects is created, it is well scaled. 
-            // Just in case, as this method should be called only once when the scene is created.
+            // Resets the scale and position, so that when the new pool of objects is created, it is well scaled. 
             transform.localScale = Vector3.one;
+            transform.position = Vector3.zero;
 
-            // Instantiates the grid, creating every tile
+            // Instantiates the grid, creating every tile.
             for (int i = 0; i < height; i++)
             {
                 for (int j = 0; j < width; j++)
                 {
-                    // Creates a new tile, and assigns it to the tile in that position in the array
+                    // Creates a new tile, and assigns it to the tile in that position in the array.
                     // Instantiates it with a (0.5f, -0.5f) offset, so that the parent is in the top-left corner.
                     tiles[i, j] = Instantiate(tile, new Vector3(j + 0.5f, -i - 0.5f, 0), Quaternion.identity, transform);
                     logicTiles[i, j] = -1;
@@ -98,24 +95,12 @@ namespace FlowFree
                 logicTiles[solution[i][solution[i].Count - 1].x, solution[i][solution[i].Count - 1].y] = i;
             }
 
+            // Puts the board in the center, visually.
+            transform.Translate(new Vector3(-width * 0.5f, height * 0.5f));
 
-            // Calculate the size of the grid, given the height and width of the screen.
-            scale = sceneCamera.orthographicSize * 2;
-            if (width >= height) scale = (scale * (Screen.width - 2 * sideMargin) / (Screen.height)) / width;
-
-            // [TODO] fix
-            //else
-            //{
-            //    // If it's scaling using the height of the board, the top and bottom margins are substracted from the available space.
-            //    Vector3 margins = sceneCamera.ScreenToWorldPoint(new Vector3(verticalMargin, 0));
-            //    scale -= (margins.x * 2);
-
-            //    scale = (scale * Screen.width / Screen.height) / height;
-            //}
-
-            // Scale the grid accordingly.
-            transform.Translate(new Vector3(-width * 0.5f * scale, height * 0.5f * scale));
-            transform.localScale = new Vector3(scale, scale);
+            // Scales the camera so that the whole content fits in.
+            int size = (width >= height) ? width : height;
+            sceneCamera.orthographicSize = size + topMargin.transform.lossyScale.y + bottomMargin.transform.lossyScale.y;
 
         }
 
@@ -129,8 +114,8 @@ namespace FlowFree
             Vector3 touchPosition = sceneCamera.ScreenToWorldPoint(touch.position);
 
             // If the touch is not inside the grid boundaries, it is the same as if there was no touch.
-            if (!(touchPosition.x > transform.position.x && touchPosition.x < transform.position.x + (scale * width) &&     // x axis
-                touchPosition.y < transform.position.y && touchPosition.y > transform.position.y - (scale * height)))       // y axis
+            if (!(touchPosition.x > transform.position.x && touchPosition.x < transform.position.x + width &&     // x axis
+                touchPosition.y < transform.position.y && touchPosition.y > transform.position.y - height))       // y axis
             {
                 touching = false;
                 return;
@@ -144,20 +129,17 @@ namespace FlowFree
             // If a tile is touched and there was a flow coming out from that tile, the rest of the flow has to be dissolved.
             if (touch.phase == TouchPhase.Began)
             {
-                // What flow is being touched? If it is -1, it is not a valid input
+                // What flow is being touched? If it is -1, it is not a valid input.
                 int flowIndex = logicTiles[pos.x, pos.y];
                 if (flowIndex == -1) return;
 
-                lastFlowClicked = flowIndex;
-                // Removes the background color until the touch has finished
+                currentFlow = flowIndex;
+                // Removes the background color until the touch has finished.
                 RemoveBackground();
 
-                // Checks if there was another flow with that color and dissolves it
-                if (currentFlowsList[flowIndex].Count > 0 || tiles[pos.x, pos.y].isCircle())
-                {
-                    saveState();
-                    dissolveFlow(flowIndex, pos);
-                }
+                // Checks if there was another flow with that color and dissolves it.
+                if (tiles[pos.x, pos.y].isCircle()) DissolveFlow(flowIndex);
+                else if (currentFlowsList[flowIndex].Count > 0) dissolveFlow(flowIndex, pos);
                 addFlow(pos);
 
                 // Updates this values for later checks
@@ -175,9 +157,6 @@ namespace FlowFree
                 // If this is not a valid movement, there is nothing to do.
                 if (!validMovement(pos)) return;
 
-                // If it is the first change, the state is saved so that it can be recovered later on, if the player wants to undo a movement
-                if (!boardChanged) saveState();
-
                 // If there is a flow prior to this movement, some part of the flow has to be dissolved.
                 int previousFlowIndex = logicTiles[pos.x, pos.y];
                 if (previousFlowIndex != -1 && !tiles[pos.x, pos.y].isCircle())
@@ -186,25 +165,45 @@ namespace FlowFree
                     int posInList = currentFlowsList[previousFlowIndex].IndexOf(pos);
 
                     // If it is another color, though, it has to be dissolved until the previous position, so that both flows do not share this tile.
-                    if (previousFlowIndex != lastFlowClicked) posInList--;
+                    if (previousFlowIndex != currentFlow) posInList--;
                     dissolveFlow(previousFlowIndex, currentFlowsList[previousFlowIndex][posInList]);
 
-                    if (previousFlowIndex != lastFlowClicked) updateFlow(pos);
+                    if (previousFlowIndex != currentFlow) updateFlow(pos);
                 }
                 else updateFlow(pos);
                 lastTileclicked = pos;
             }
 
-            // If the touch has finished (either because it was cancelled or becuased the player lifted their finger, take this into consideration:
+            // If the touch has finished (either because it was cancelled or becuase the player lifted their finger, take this into consideration:
             // If there was any change in the flows, the number of movements has to increase.
             // If there was any flow movement, the tiles have to change their background.
             else if(touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Ended)
             {
-                AddBackground();
-                if (StateChanged()) playerMovements++;
+                SetBackgrounds();
+                if (StateChanged())
+                {
+                    playerMovements++;
+                    previousFlow = currentFlow;
+                }
+                else saveState();
                 touching = false;
-                boardChanged = false;
+                if (Finished()) Debug.Log("ACABADO");
             }
+        }
+
+
+        private bool Finished()
+        {
+            // Checks that every tile is in the same flow as in the solution.
+            for(int i = 0; i < solution.Length; i++)
+            {
+                for(int j = 0; j < solution[i].Count; j++)
+                {
+                    Vector2Int tile = solution[i][j];
+                    if (logicTiles[tile.x, tile.y] != i || !tiles[tile.x, tile.y].isFullyConnected()) return false;
+                }
+            }
+            return true;
         }
 
 
@@ -215,11 +214,8 @@ namespace FlowFree
         /// <returns>The position of the tile, in the array of tiles. (row, column)</returns>
         private Vector2Int getTile(Vector3 touchPosition)
         {
-            // Removes the offset, so that the touch is in the range [(0,0), (width * scale, height * scale)]
+            // Removes the offset, so that the touch is in the range [(0,0), (width, height)]
             touchPosition = touchPosition - transform.position;
-
-            // Transforms the vector using the scale, so that the touch is in the range [(0,0), (width, height)]
-            touchPosition /= scale;
 
             // Calculates the tile clicked, using the integer part of each component of the vector
             int row = Mathf.Clamp(Mathf.FloorToInt(-touchPosition.y), 0, width - 1);
@@ -228,75 +224,94 @@ namespace FlowFree
             return new Vector2Int(row, column);
         }
 
-        private void AddBackground()
+        private void SetBackgrounds()
         {
-            List<Vector2Int> flow = currentFlowsList[lastFlowClicked];
-            if(flow.Count > 1)
+            for(int i = 0; i < height; i++)
             {
-                for (int i = 0; i < flow.Count; i++)
-                    tiles[flow[i].x, flow[i].y].setBackgroundColor(GameManager.Instance().getActualTheme().colors[lastFlowClicked]);
+                for(int j = 0; j < width; j++)
+                {
+                    int colorIndex = logicTiles[i, j];
+                    if (colorIndex != -1) tiles[i, j].SetBackgroundColor(GameManager.Instance().getActualTheme().colors[colorIndex]);
+                    else tiles[i, j].RemoveBackgroundColor();
+                }
             }
         }
 
         private void RemoveBackground()
         {
-            List<Vector2Int> flow = currentFlowsList[lastFlowClicked];
+            List<Vector2Int> flow = currentFlowsList[currentFlow];
 
             for (int i = 0; i < flow.Count; i++)
-                tiles[flow[i].x, flow[i].y].removeBackgroundColor();
+                tiles[flow[i].x, flow[i].y].RemoveBackgroundColor();
         }
 
         private void saveState()
         {
-            for (int i = 0; i < solution.Length; i++) 
+            for (int i = 0; i < solution.Length; i++)
             {
                 previousFlowsList[i].Clear();
-                for(int j = 0; j < currentFlowsList[i].Count; j++)
+                for (int j = 0; j < currentFlowsList[i].Count; j++)
                 {
                     previousFlowsList[i].Add(currentFlowsList[i][j]);
                 }
             }
-            boardChanged = true;
         }
         
         // Only checks the last flow; it is the only one that can cause changes: if another one has changed, it is because this one has.
         private bool StateChanged()
         {
-            // If there was no change, the state has not changed (obviously).
-            if (!boardChanged) return false;
+            // If the changed flow is the same one as in the previous movement, there is no change.
+            if (currentFlow == previousFlow) return false;
+
+            // ------------------------------------------------------------------ //
+            // It is a different flow. Checks whether there has been some change. //
+            // ------------------------------------------------------------------ //
 
             // If the flow only has one element, it is considered to be unchanged (as it has no effect in the game).
-            if (currentFlowsList[lastFlowClicked].Count <= 1 && previousFlowsList[lastFlowClicked].Count <= 1) return false;
+            if (currentFlowsList[currentFlow].Count <= 1 && previousFlowsList[currentFlow].Count <= 1) return false;
 
             // If the current flow and the previous one have different sizes, there has been some changes.
-            if (currentFlowsList[lastFlowClicked].Count != previousFlowsList[lastFlowClicked].Count) return true;
+            if (currentFlowsList[currentFlow].Count != previousFlowsList[currentFlow].Count) return true;
 
             // If the flow changed the start, there may have been a change.
-            int startIndex = previousFlowsList[lastFlowClicked].IndexOf(currentFlowsList[lastFlowClicked][0]);
+            int startIndex = previousFlowsList[currentFlow].IndexOf(currentFlowsList[currentFlow][0]);
 
             // If the previous flow does not contain the new one's start, the flow changed.
             if (startIndex == -1) return true;
 
-            // If it is included, it needs to be in the same order (or inversed)
-            int size = currentFlowsList[lastFlowClicked].Count;
+            // If it is included, it needs to be in the same order (or inversed).
+            int size = currentFlowsList[currentFlow].Count;
             if (startIndex == 0)
             {
                 for (int i = 0; i < size; i++)
                 {
-                    if (currentFlowsList[lastFlowClicked][i] != previousFlowsList[lastFlowClicked][i]) return true;
+                    if (currentFlowsList[currentFlow][i] != previousFlowsList[currentFlow][i]) return true;
                 }
             }
             else
             {
                 for (int i = 0; i < size; i++)
                 {
-                    if (currentFlowsList[lastFlowClicked][size - i] != previousFlowsList[lastFlowClicked][i]) return true;
+                    if (currentFlowsList[currentFlow][size - i] != previousFlowsList[currentFlow][i]) return true;
                 }
             }
 
             return false;
         }
 
+        private void DissolveFlow(int flowIndex)
+        {
+            List<Vector2Int> flow = currentFlowsList[flowIndex];
+
+            for (int i = 0; i < flow.Count; i++)
+            {
+                Vector2Int pos = flow[i];
+                Tile tile = tiles[pos.x, pos.y];
+                tile.clearFlow(false);
+                if (!tile.isCircle()) logicTiles[pos.x, pos.y] = -1;
+            }
+            flow.Clear();
+        }
         private void dissolveFlow(int flowIndex, Vector2Int lastTile)
         {
             List<Vector2Int> flow = currentFlowsList[flowIndex];
@@ -313,7 +328,6 @@ namespace FlowFree
                 if (!tile.isCircle()) logicTiles[pos.x, pos.y] = -1;
             }
             flow.RemoveRange(posInList + 1, flow.Count - (posInList + 1));
-            boardChanged = true;
         }
         private void updateFlow(Vector2Int lastTile)
         {
@@ -325,22 +339,21 @@ namespace FlowFree
         }
         private void addFlow(Vector2Int lastTile)
         {
-            List<Vector2Int> flow = currentFlowsList[lastFlowClicked];
+            List<Vector2Int> flow = currentFlowsList[currentFlow];
 
             if (flow.Contains(lastTile)) return;
 
             // Si no esta en la lista, lo anadimos y le ponemos el color
             flow.Add(lastTile);
-            logicTiles[lastTile.x, lastTile.y] = lastFlowClicked;
-            boardChanged = true;
+            logicTiles[lastTile.x, lastTile.y] = currentFlow;
         }
         private void drawFlow(Vector2Int tilePos, Vector2Int direction)
         {
             Tile tile = tiles[tilePos.x, tilePos.y];
-            tile.AddFlow(GameManager.Instance().getActualTheme().colors[lastFlowClicked], direction);
+            tile.AddFlow(GameManager.Instance().getActualTheme().colors[currentFlow], direction);
 
             tile = tiles[tilePos.x - direction.x, tilePos.y - direction.y];
-            tile.AddFlow(GameManager.Instance().getActualTheme().colors[lastFlowClicked], -direction);
+            tile.AddFlow(GameManager.Instance().getActualTheme().colors[currentFlow], -direction);
         }
         private bool validMovement(Vector2Int pos)
         {
