@@ -17,88 +17,60 @@ namespace FlowFree
         [Tooltip("Sprite used for drawing the background square, which will be a specific color depending on the flow it contains.")]
         [SerializeField] private SpriteRenderer background;
 
-        /// <summary>
-        /// Makes the tile have a circle, with the specified color.
-        /// </summary>
-        /// <param name="color">Color of the circle. This cannot be changed afterwards.</param>
-        public void PutCircle(Color color)
+        private int connections = 0;
+        private int colorIndex = -1;
+        private Color color = Color.black;
+
+        public void PutCircle(int index)
         {
-            // Check so that a circle is not changed after it's been set
-            if(!circle.enabled)
-            {
-                circle.enabled = true;
-                circle.color = color;
-            }
+            SetColor(index);
+            circle.enabled = true;
+            circle.color = color;
+            connections++;
+        }
+        public void SetColor(int index)
+        {
+            colorIndex = index;
+            if(index >= 0)  color = GameManager.Instance().getActualTheme().colors[index];
+        }
+        public void SetFlowActive(Vector2Int direction, bool active)
+        {
+            SpriteRenderer aux;
+
+            if (connections < 1) aux = entranceFlow;
+            else aux = exitFlow;
+
+            if (active && !aux.enabled) connections++;
+            else if(!active && aux.enabled) connections--;
+
+            aux.enabled = active;
+            aux.transform.up = new Vector3(direction.x, -direction.y, 0);
+            aux.color = color;
         }
 
-        /// <summary>
-        /// Puts a flow, in the given direction with the given color.
-        /// It activates the entrance flow if it is the first time the tile is being used.
-        /// It activates the exit flow if the tile is being used for the second time, or if it has a circle (in which case, there can only be one flow).
-        /// </summary>
-        /// <param name="color">Color of the flow to be painted.</param>
-        /// <param name="direction">Direction in which the flow will be painted.</param>
-        public void AddFlow(Color color, Vector2Int direction)
-        {
-            if (circle.enabled || entranceFlow.enabled) setFlow(exitFlow, color, direction);
-            else setFlow(entranceFlow, color, direction);
-        }
+        public int GetConnections() { return connections; }
+        public int GetColorIndex() { return colorIndex; }
+        public bool IsCircle() { return circle.enabled; }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="onlyExit"></param>
-        public void clearFlow(bool onlyExit)
+        public void Dissolve(bool onlyExit)
         {
             clearWay(exitFlow);
             if (!onlyExit) clearWay(entranceFlow);
+
+            if (!entranceFlow.enabled && !exitFlow.enabled && !circle.enabled) colorIndex = -1;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public bool isCircle() { return circle.enabled; }
-
-        public bool isFullyConnected() { return exitFlow.enabled; }
-
-        public bool isActive()
+        public void ResetState()
         {
-            return circle.enabled || entranceFlow.enabled;
+            Dissolve(false);
+            if(!circle.enabled) colorIndex = -1;
         }
-
-        public void SetBackgroundColor(Color color)
-        {
-            if (exitFlow.enabled || entranceFlow.enabled)
-            {
-                // Sets the background color
-                background.enabled = true;
-                color.a = 0.25f;
-                background.color = color;
-            }
-        }
-        public void RemoveBackgroundColor()
-        {
-            background.enabled = false;
-        }
-
-        //--------------------------------------------------------------------------//
-
-        private void setFlow(SpriteRenderer flow, Color color, Vector2Int direction)
-        {
-            flow.enabled = true;
-            flow.color = color;
-            flow.transform.rotation = Quaternion.identity;
-            int rotation = (direction.x == -1) ? 0 : (direction.x == 1) ? 180 : direction.y * -90;
-
-            flow.transform.Rotate(new Vector3(0, 0, rotation));
-        }
-
+        
         private void clearWay(SpriteRenderer sprite)
         {
             sprite.transform.rotation = Quaternion.identity;
-            sprite.enabled = false;
+            if (sprite.enabled) connections--;
+            sprite.enabled = false;            
         }
-
     }
 }

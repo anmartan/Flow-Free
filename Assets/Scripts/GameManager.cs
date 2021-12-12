@@ -39,10 +39,10 @@ namespace FlowFree
                 instance.levelManager = levelManager;
                 instance.boardManager = boardManager;
 
-                if (instance.boardManager) createLevel();
                 Destroy(this);
             }
 
+            if (instance.boardManager) createLevel();
         }
 
 

@@ -19,7 +19,6 @@ public class Map
         if (info[1] != "0") return false;
 
         if (!int.TryParse(info[2], out levelInPage)) return false;
-        Debug.Log($"Nivel en la pagina: {levelInPage}");
 
         if (!int.TryParse(info[3], out flowsNumber)) return false;
 
@@ -35,7 +34,7 @@ public class Map
                 int pos;
                 if (!int.TryParse(flowI[j], out pos)) return false;
 
-                flows[i].Add(new Vector2Int(pos % width, pos / height));
+                flows[i].Add(new Vector2Int(pos / height, pos % width));
             }
         }
 
