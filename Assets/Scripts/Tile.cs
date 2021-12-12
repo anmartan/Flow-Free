@@ -31,7 +31,12 @@ namespace FlowFree
         public void SetColor(int index)
         {
             colorIndex = index;
-            if(index >= 0)  color = GameManager.Instance().getActualTheme().colors[index];
+            if (index < 0) return;
+
+            color = GameManager.Instance().getActualTheme().colors[index];
+            circle.color = color;
+            entranceFlow.color = color;
+            exitFlow.color = color;
         }
         public void SetFlowActive(Vector2Int direction, bool active)
         {

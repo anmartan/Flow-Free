@@ -24,14 +24,14 @@ namespace FlowFree
 
         private List<Vector2Int>[] solution;
 
-        private bool changed;
+        private bool lastMoveChangedState;
         private bool touching;
         private Vector2Int lastTile;
         private int currentFlowColor;
-        private int colorDelMedio;
+        private int intermediateColor;
         private int lastFlowColor;
 
-        private List<Vector2Int>[] changes;
+        private List<Vector2Int>[] intermediateState;
         private List<Vector2Int>[] currentState;
         private List<Vector2Int>[] lastState;
 
@@ -54,14 +54,14 @@ namespace FlowFree
             solution = new List<Vector2Int>[map.getFlowsNumber()];
             currentState = new List<Vector2Int>[map.getFlowsNumber()];
             lastState = new List<Vector2Int>[map.getFlowsNumber()];
-            changes = new List<Vector2Int>[map.getFlowsNumber()];
+            intermediateState = new List<Vector2Int>[map.getFlowsNumber()];
 
             for (int i = 0; i < map.getFlowsNumber(); i++)
             {
                 solution[i] = new List<Vector2Int>();
                 currentState[i] = new List<Vector2Int>();
                 lastState[i] = new List<Vector2Int>();
-                changes[i] = new List<Vector2Int>();
+                intermediateState[i] = new List<Vector2Int>();
             }
 
             // Destroys all of the tiles it saved previously.
@@ -159,8 +159,13 @@ namespace FlowFree
                     int positionInList = currentState[previousColor].IndexOf(pos);
 
                     // If the flow is the same color, and it is not the missing circle it is removed until this position.
-                    if (previousColor == currentFlowColor && !tile.IsCircle() || pos == currentState[currentFlowColor][0]) DissolveFlow(previousColor, currentState[previousColor][positionInList]);
-                    
+                    // If there was a flow in this position, it is restored.
+                    if (previousColor == currentFlowColor && !tile.IsCircle() || pos == currentState[currentFlowColor][0])
+                    {
+                        DissolveFlow(previousColor, currentState[previousColor][positionInList]);
+                        RestoreFlow(lastTile);
+                    }
+
                     // If it is another color, though, it has to be dissolved until the previous position, so that both flows do not share this tile.
                     else if (previousColor != currentFlowColor) DissolveFlow(previousColor, currentState[previousColor][positionInList - 1]);
                 }
@@ -174,22 +179,27 @@ namespace FlowFree
             // If there was any flow movement, the tiles have to change their background.
             else if (touching && (touch.phase == TouchPhase.Canceled || touch.phase == TouchPhase.Ended))
             {
-                if (changed)
-                {
-                    SaveState(changes, lastState);
-                    lastFlowColor = colorDelMedio;
-                    changed = false;
-                }
                 if (StateChanged())
                 {
-                    SaveState(currentState, changes);
-                    colorDelMedio = currentFlowColor;
-                    changed = true;
+                    if (lastMoveChangedState)
+                    {
+                        SaveState(intermediateState, lastState);
+                        lastFlowColor = intermediateColor;
+                        lastMoveChangedState = false;
+                    }
+
+                    SaveState(currentState, intermediateState);
+                    intermediateColor = currentFlowColor;
+                    lastMoveChangedState = true;
 
                     if (IsMovement())
                     {
                         playerMovements++;
                     }
+                }
+                else if (currentFlowColor != lastFlowColor)
+                {
+                    currentFlowColor = lastFlowColor;
                 }
                 touching = false;
 
@@ -234,7 +244,6 @@ namespace FlowFree
 
                 tile.Dissolve(false);
                 if (!tile.IsCircle()) tile.SetColor(-1);
-                //changes.Add(tile);
             }
             flow.RemoveRange(positionInList + 1, flow.Count - (positionInList + 1));
         }
@@ -291,7 +300,12 @@ namespace FlowFree
 
         private bool AddFlow(Vector2Int lastTile)
         {
-            List<Vector2Int> flow = currentState[currentFlowColor];
+            return AddFlow(currentFlowColor, lastTile);
+        }
+        private bool AddFlow(int colorIndex,Vector2Int lastTile)
+        {
+
+            List<Vector2Int> flow = currentState[colorIndex];
 
             if (flow.Contains(lastTile)) return false;
 
@@ -299,11 +313,10 @@ namespace FlowFree
             flow.Add(lastTile);
 
             Tile tile = tiles[lastTile.y, lastTile.x];
-            tile.SetColor(currentFlowColor);
-            //changes.Add(tile);
+            tile.SetColor(colorIndex);
+
             return true;
         }
-
         private void CrossFlow(Vector2Int position, Vector2Int direction)
         {
             Tile tile = tiles[position.y, position.x];
@@ -312,6 +325,49 @@ namespace FlowFree
             tile = tiles[position.y - direction.y, position.x - direction.x];
             tile.SetFlowActive(-direction, true);
         }
+
+        private void RestoreFlow(Vector2Int tilePosition)
+        {
+            int i = 0;
+
+            while(i < intermediateState.Length)
+            {
+                if (intermediateState[i].Contains(tilePosition)) break;
+                i++;
+            }
+            
+            if (i >= intermediateState.Length) return;
+
+            // If it is not connected to the actual flow, nothing to do.
+            int lastTile = currentState[i].Count - 1;
+            int currentTile = intermediateState[i].IndexOf(tilePosition);
+
+            if (currentTile - lastTile > 1) return;
+            currentTile--;
+
+            while (currentTile < intermediateState[i].Count - 1)  
+            {
+                Vector2Int pos = intermediateState[i][currentTile];
+                Tile tile = tiles[pos.y, pos.x];
+                Vector2Int nextPos = intermediateState[i][currentTile + 1];
+                Vector2Int dir = pos - nextPos;
+
+                if (!currentState[currentFlowColor].Contains(pos))
+                {
+                    tile.SetColor(i);
+                    AddFlow(i, pos);
+
+                    // Si la siguiente tile del estado actual es del color actual, no te hago cross
+                    if (!currentState[currentFlowColor].Contains(nextPos)) CrossFlow(pos, dir);
+                    else return;
+                }
+                else return;
+
+                currentTile++;
+            }
+            AddFlow(i, intermediateState[i][currentTile]);
+        }
+
 
         public void UndoMovement()
         {
@@ -324,7 +380,7 @@ namespace FlowFree
             }
             if (currentFlowColor != lastFlowColor) playerMovements--;
             SaveState(lastState, currentState);
-            if (changed) SaveState(lastState, changes);
+            if (lastMoveChangedState) SaveState(lastState, intermediateState);
 
             for (int i = 0; i < currentState.Length; i++) 
             {
@@ -341,7 +397,7 @@ namespace FlowFree
                     }
                 }
             }
-            changed = false;
+            lastMoveChangedState = false;
 
             Debug.Log(playerMovements);
         }
