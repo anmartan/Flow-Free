@@ -62,6 +62,11 @@ namespace FlowFree
 
         public bool isFullyConnected() { return exitFlow.enabled; }
 
+        public bool isActive()
+        {
+            return circle.enabled || entranceFlow.enabled;
+        }
+
         public void SetBackgroundColor(Color color)
         {
             if (exitFlow.enabled || entranceFlow.enabled)

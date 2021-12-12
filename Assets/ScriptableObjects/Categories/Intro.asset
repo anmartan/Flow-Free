@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   name: Intro
   packs:
-  - {fileID: 11400000, guid: a907f18fcc8a2834ca0578a635884139, type: 2}
-  - {fileID: 11400000, guid: bc5c4c132ffcf694e8fb003735bf1ddf, type: 2}
+  - {fileID: 11400000, guid: 5d27944a46a69484f90c0b71f9aa89c4, type: 2}
+  - {fileID: 11400000, guid: f58290b1c0e480645aff61ef9b20612c, type: 2}

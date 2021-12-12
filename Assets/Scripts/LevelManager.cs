@@ -6,6 +6,5 @@ namespace FlowFree
 {
     public class LevelManager : MonoBehaviour
     {
-
     }
 }

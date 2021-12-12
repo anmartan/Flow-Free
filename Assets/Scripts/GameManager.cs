@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace FlowFree
 {
@@ -37,19 +38,34 @@ namespace FlowFree
                 // Assigns the level manager and board manager that will be used in the new scene.
                 instance.levelManager = levelManager;
                 instance.boardManager = boardManager;
+
+                if (instance.boardManager) createLevel();
                 Destroy(this);
             }
 
         }
 
-        private void Start()
-        {
-            createLevel();
-        }
 
         public void RestartLevel()
         {
-            boardManager.createBoard(currentMap);
+            boardManager.CreateBoard(currentMap);
+        }
+
+        public void NextLevel()
+        {
+            levelNum++;
+            createLevel();
+        }
+
+        public void ToLevelScene()
+        {
+            SceneManager.LoadScene("Level");
+        }
+
+        public void PreviousLevel()
+        {
+            levelNum--;
+            createLevel();
         }
         private void createLevel()
         {
@@ -58,10 +74,11 @@ namespace FlowFree
 
 
             currentMap = new Map();
-            if (currentMap.loadMap(levels[levelNum]))    boardManager.createBoard(currentMap);
+            if (currentMap.loadMap(levels[levelNum]))    boardManager.CreateBoard(currentMap);
             else Debug.LogError("Nivel incorrecto");
 
         }
+
         // [TODO] getter pero bien
         public Theme getActualTheme()
         {

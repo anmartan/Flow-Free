@@ -41,7 +41,7 @@ namespace FlowFree
         /// Receives a map which has been previously loaded and includes the relevant information for the level.
         /// </summary>
         /// <param name="map">A map with the level information.</param>
-        public void createBoard(Map map)
+        public void CreateBoard(Map map)
         {
             width = map.getWidth();
             height = map.getHeight();
@@ -183,6 +183,7 @@ namespace FlowFree
                 if (StateChanged())
                 {
                     playerMovements++;
+                    Debug.Log(playerMovements);
                     previousFlow = currentFlow;
                 }
                 else saveState();
@@ -292,7 +293,7 @@ namespace FlowFree
             {
                 for (int i = 0; i < size; i++)
                 {
-                    if (currentFlowsList[currentFlow][size - i] != previousFlowsList[currentFlow][i]) return true;
+                    if (currentFlowsList[currentFlow][startIndex - i] != previousFlowsList[currentFlow][i]) return true;
                 }
             }
 
