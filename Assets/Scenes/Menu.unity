@@ -157,8 +157,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 58, y: -0.5}
-  m_SizeDelta: {x: 0, y: 1}
+  m_AnchoredPosition: {x: -113, y: -0.5}
+  m_SizeDelta: {x: -272.26, y: 1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &222715619
 MonoBehaviour:
@@ -181,7 +181,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_FontData:
-    m_Font: {fileID: 12800000, guid: 9d6093ef7ac16c14aaecb2529b10e41c, type: 3}
+    m_Font: {fileID: 12800000, guid: 42562fe5253313643b2bb9cdf54b228a, type: 3}
     m_FontSize: 64
     m_FontStyle: 0
     m_BestFit: 0
@@ -684,8 +684,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -127.5}
-  m_SizeDelta: {x: -300, y: 29}
+  m_AnchoredPosition: {x: 4.899994, y: -127.5}
+  m_SizeDelta: {x: -453.49, y: 29}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1157425681
 MonoBehaviour:
@@ -820,15 +820,15 @@ RectTransform:
   m_GameObject: {fileID: 1332130772}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.34079084, y: 0.63397944, z: 0.71439934}
+  m_LocalScale: {x: 0.25700402, y: 0.47810927, z: 0.53875715}
   m_Children: []
   m_Father: {fileID: 1157425680}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: 218, y: -1}
-  m_SizeDelta: {x: -400, y: 100}
+  m_AnchoredPosition: {x: 152, y: -1}
+  m_SizeDelta: {x: -265.18, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1332130774
 MonoBehaviour:
@@ -1242,7 +1242,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_FontData:
-    m_Font: {fileID: 12800000, guid: 9d6093ef7ac16c14aaecb2529b10e41c, type: 3}
+    m_Font: {fileID: 12800000, guid: 42562fe5253313643b2bb9cdf54b228a, type: 3}
     m_FontSize: 64
     m_FontStyle: 0
     m_BestFit: 1
@@ -1254,9 +1254,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: 'flow
-
-'
+  m_Text: FLOW
 --- !u!222 &1964980294
 CanvasRenderer:
   m_ObjectHideFlags: 0

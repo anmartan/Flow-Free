@@ -78,7 +78,7 @@ namespace FlowFree
             else Debug.LogError("Nivel incorrecto");
 
         }
-
+        
         // [TODO] getter pero bien
         public Theme getActualTheme()
         {

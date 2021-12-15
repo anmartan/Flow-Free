@@ -14,9 +14,6 @@ namespace FlowFree
         [Tooltip("Sprite used for drawing the circles in the needed tiles.")]
         [SerializeField] private SpriteRenderer circle;
 
-        [Tooltip("Sprite used for drawing the background square, which will be a specific color depending on the flow it contains.")]
-        [SerializeField] private SpriteRenderer background;
-
         private int connections = 0;
         private int colorIndex = -1;
         private Color color = Color.black;
@@ -53,6 +50,7 @@ namespace FlowFree
             aux.color = color;
         }
 
+        public bool IsFullyConnected() { return connections == 2; }
         public int GetConnections() { return connections; }
         public int GetColorIndex() { return colorIndex; }
         public bool IsCircle() { return circle.enabled; }

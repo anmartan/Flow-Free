@@ -14,7 +14,7 @@ public class Map
         if (!int.TryParse(size[0], out width)) return false;
 
         if (size.Length > 1 && !int.TryParse(size[1], out height)) return false;
-        else height = width;
+        height = width;
 
         if (info[1] != "0") return false;
 
@@ -23,11 +23,12 @@ public class Map
         if (!int.TryParse(info[3], out flowsNumber)) return false;
 
         flows = new List<Vector2Int>[flowsNumber];
-
+        _flows = new List<TileInfo>[flowsNumber];
         for (int i = 0; i < flowsNumber; i++)
         {
             string[] flowI = splits[i + 1].Split(',');
             flows[i] = new List<Vector2Int>();
+            _flows[i] = new List<TileInfo>();
 
             for (int j = 0; j < flowI.Length; j++)
             {
@@ -35,6 +36,10 @@ public class Map
                 if (!int.TryParse(flowI[j], out pos)) return false;
 
                 flows[i].Add(new Vector2Int(pos / height, pos % width));
+
+                TileInfo tile = new TileInfo();
+                tile._position = new Vector2Int(pos / height, pos % width);
+
             }
         }
 
@@ -46,14 +51,21 @@ public class Map
     public int getFlowsNumber() { return flowsNumber; }
     public List<Vector2Int>[] getFlows() { return flows; }
 
+
+
     private int width, height;
     // reservado
     private int levelInPage;
     private int flowsNumber;
     // puentes
-    // celdas huecas
-    // muros
-
-
+    // TODO erase
     private List<Vector2Int>[] flows;
+
+    private List<TileInfo>[] _flows;
+    struct TileInfo
+    {
+        public bool _isEmpty;          // If it is empty, the player won't be able to move to this position. 
+        public bool[] _walls;          // North, South, East and West, in that order.
+        public Vector2Int _position;   // Expressed as (row, column).
+    }
 }
