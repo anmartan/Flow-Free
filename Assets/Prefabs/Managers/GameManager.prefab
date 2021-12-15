@@ -45,8 +45,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   levelManager: {fileID: 0}
   boardManager: {fileID: 0}
-  levelCategory:
+  _levelCategories:
   - {fileID: 11400000, guid: 45310c8c0687ca34686b8162a575b67a, type: 2}
+  - {fileID: 11400000, guid: 9a82fdc0ca1d89f4aa9d3ef9444028eb, type: 2}
+  - {fileID: 11400000, guid: 47bd307bab3074442836ad2f42bf5504, type: 2}
   themes:
   - {fileID: 11400000, guid: ced1adac13588bd4faef33ae87ee487b, type: 2}
   levelCat: 0

@@ -12,7 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 993d3f9dc0023ec438abf28a33e3e245, type: 3}
   m_Name: Intro
   m_EditorClassIdentifier: 
-  name: Intro
+  categoryName: Intro
+  color: {r: 0, g: 0.5529412, b: 0, a: 1}
+  shadeColor: {r: 0, g: 0.754717, b: 0.13237287, a: 1}
   packs:
   - {fileID: 11400000, guid: 5d27944a46a69484f90c0b71f9aa89c4, type: 2}
   - {fileID: 11400000, guid: f58290b1c0e480645aff61ef9b20612c, type: 2}
+  - {fileID: 11400000, guid: 15e891ed0297a094a9da20c47e1d647e, type: 2}
+  - {fileID: 11400000, guid: 9c03974f2048dc349b4ad237bd2bd042, type: 2}

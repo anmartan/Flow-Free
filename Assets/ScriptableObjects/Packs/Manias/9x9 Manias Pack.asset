@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 75f89e43ec80ae443b4d7988b52a4e89, type: 3}
-  m_Name: Additional
+  m_Name: 9x9 Manias Pack
   m_EditorClassIdentifier: 
-  packName: Addititonal
-  levels: {fileID: 4900000, guid: 05a35e9a3f4a35443b368025ebcdf5d6, type: 3}
+  packName: 9x9 Manias
+  levels: {fileID: 4900000, guid: 471882697804c0246a216d30bfd1eb23, type: 3}

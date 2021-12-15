@@ -684,7 +684,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: 4.899994, y: -127.5}
+  m_AnchoredPosition: {x: 4.9000244, y: -127.5}
   m_SizeDelta: {x: -453.49, y: 29}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1157425681
@@ -879,6 +879,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: GameManager
       objectReference: {fileID: 0}
+    - target: {fileID: 7451636109603945109, guid: 9740443e993334741b3e8daaf4cbf013, type: 3}
+      propertyPath: themes.Array.data[0]
+      value: 
+      objectReference: {fileID: 11400000, guid: 3328a067ff68cd440b94311b17be10e3, type: 2}
     - target: {fileID: 7451636109603945110, guid: 9740443e993334741b3e8daaf4cbf013, type: 3}
       propertyPath: m_RootOrder
       value: 0

@@ -1,7 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace FlowFree
 {
@@ -100,6 +98,16 @@ namespace FlowFree
             // Scales the camera so that the whole content fits in.
             int size = (_width >= _height) ? _width : _height;
             _sceneCamera.orthographicSize = size + _topMargin.transform.lossyScale.y + _bottomMargin.transform.lossyScale.y;
+                                            
+                                            /*
+                                             * 
+            float size = _height * 0.5f + _topMargin.transform.lossyScale.y + _bottomMargin.transform.lossyScale.y;
+            if (_sceneCamera.aspect * size < _width)
+            {
+                size = (_width * 0.5f / _sceneCamera.aspect);
+            }
+            _sceneCamera.orthographicSize = size * 2;
+                                             */
         }
 
         public bool InsideBoundaries(Vector3 position)

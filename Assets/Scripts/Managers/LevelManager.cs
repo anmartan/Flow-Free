@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -17,17 +14,21 @@ namespace FlowFree
         
         [SerializeField] private Button _undoMovementButton;
         [SerializeField] private Button _previousLevelButton;
-        [SerializeField] private Button _retryLevelButton;
         [SerializeField] private Button _nextLevelButton;
         [SerializeField] private Button _hintsButton;
 
 
         private bool _hasNextLevel;
         private bool _hasPreviousLevel;
+        
+        private Map _currentMap;
 
-        public void CreateLevel()
+        public void CreateLevel(string map)
         {
+            _currentMap = new Map();
             
+            if (_currentMap.loadMap(map))    _boardManager.CreateBoard(_currentMap);
+            else Debug.LogError("Nivel incorrecto");
         }
         private void Update()
         {
@@ -57,6 +58,10 @@ namespace FlowFree
             _undoMovementButton.interactable = false;
         }
 
+        public void RestartLevel()
+        {
+            _boardManager.CreateBoard(_currentMap);
+        }
         public void NextLevel()
         {
             

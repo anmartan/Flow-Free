@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -10,11 +8,10 @@ namespace FlowFree
         private static GameManager instance;
         [SerializeField] private LevelManager levelManager;
         [SerializeField] private BoardManager boardManager;
-        [SerializeField] private LevelCategory[] levelCategory; // [TODO] llevar a un config.cs?
+        [SerializeField] private Category[] _levelCategories; // [TODO] llevar a un config.cs?
         [SerializeField] private Theme[] themes;                // algo que se encargue de estas cosas
 
 
-        private Map currentMap;
 
         public int levelCat = 0;
         public int levelPack = 0;
@@ -24,8 +21,6 @@ namespace FlowFree
         {
             return instance;
         }
-
-
         private void Awake()
         {
             if (instance == null)
@@ -43,12 +38,6 @@ namespace FlowFree
             }
 
             if (instance.boardManager) createLevel();
-        }
-
-
-        public void RestartLevel()
-        {
-            boardManager.CreateBoard(currentMap);
         }
 
         public void NextLevel()
@@ -69,14 +58,10 @@ namespace FlowFree
         }
         private void createLevel()
         {
-            TextAsset text = levelCategory[levelCat].packs[levelPack].levels;
+            TextAsset text = _levelCategories[levelCat].packs[levelPack].levels;
             string[] levels = text.ToString().Split('\n');
 
-
-            currentMap = new Map();
-            if (currentMap.loadMap(levels[levelNum]))    boardManager.CreateBoard(currentMap);
-            else Debug.LogError("Nivel incorrecto");
-
+            if(levelManager) levelManager.CreateLevel(levels[levelNum]);
         }
         
         // [TODO] getter pero bien
@@ -84,5 +69,11 @@ namespace FlowFree
         {
             return themes[0];
         }
+
+        public Category[] GetAvailableCategories()
+        {
+            return _levelCategories;
+        }
+        
     }
 }
