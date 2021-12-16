@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -51,6 +52,8 @@ namespace FlowFree
             _width = map.getWidth();
             _height = map.getHeight();
             _tiles = new Tile[_height, _width];
+            List<Tuple<Vector2Int, Vector2Int>> walls = map.GetWalls();
+            List<Vector2Int> gaps = map.GetGaps();
 
             // Creates the lists that will contain information about the board: the final solution, the current state and the previous state.
             _solution = new List<Vector2Int>[map.getFlowsNumber()];
@@ -98,6 +101,23 @@ namespace FlowFree
                 _tiles[_solution[i][_solution[i].Count - 1].y, _solution[i][_solution[i].Count - 1].x].PutCircle(i);
             }
 
+            // Sets the gaps in the board; they will not be interactable.
+            for (int i = 0; i < gaps.Count; i++)
+            {
+                Vector2Int position = gaps[i];
+                _tiles[position.y, position.x].SetActive(false);
+            }
+            
+            // Sets the walls in every tile; in both of the tiles, in opposite directions.
+            for (int i = 0; i < walls.Count; i++)
+            {
+                Tuple<Vector2Int, Vector2Int> wall = walls[i];
+                Vector2Int direction = wall.Item1 - wall.Item2;
+                
+                _tiles[wall.Item1.y, wall.Item1.x].SetWallActive(direction);
+                _tiles[wall.Item2.y, wall.Item2.x].SetWallActive(-direction);
+            }
+            
             // Puts the board in the center, visually.
             transform.Translate(new Vector3(-_width * 0.5f, _height * 0.5f));
 
@@ -456,6 +476,9 @@ namespace FlowFree
         }
         private bool ValidMovement(Vector2Int pos)
         {
+            // If it is a gap, the player cannot move there.
+            if (_tiles[pos.y, pos.x].IsGap()) return false;
+            
             // If there is more than one tile of distance between them, the movement is not valid
             if ((_lastTile - pos).magnitude > 1) return false;
 
@@ -464,6 +487,9 @@ namespace FlowFree
             // If there is a circle of another color in the actual tile, the flow cannot grow.
             if (_tiles[pos.y, pos.x].IsCircle() && flowIndex != _tiles[pos.y, pos.x].GetColorIndex()) return false;
 
+            // If there is a wall between the last tile and the current position, the flow cannot grow.
+            if (_tiles[pos.y, pos.x].IsWallActive(pos - _lastTile)) return false;
+            
             // If the flow has both circles covered, and the movement is not used to undo the flow, it is not a valid movement.
             if (_currentState[flowIndex].Contains(_solution[flowIndex][0]) &&                               // Contains the first circle
                 _currentState[flowIndex].Contains(_solution[flowIndex][_solution[flowIndex].Count - 1]) &&  // Contains the second circle

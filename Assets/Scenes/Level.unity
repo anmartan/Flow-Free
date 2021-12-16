@@ -753,7 +753,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 485172222}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1389713200}
+        m_TargetAssemblyTypeName: FlowFree.LevelManager, Assembly-CSharp
+        m_MethodName: GiveHint
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &485172222
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2367,11 +2379,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7451636109603945109, guid: 9740443e993334741b3e8daaf4cbf013, type: 3}
       propertyPath: levelNum
-      value: 0
+      value: 31
       objectReference: {fileID: 0}
     - target: {fileID: 7451636109603945109, guid: 9740443e993334741b3e8daaf4cbf013, type: 3}
       propertyPath: levelPack
-      value: 0
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 7451636109603945109, guid: 9740443e993334741b3e8daaf4cbf013, type: 3}
       propertyPath: boardManager
