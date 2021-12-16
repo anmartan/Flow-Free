@@ -365,7 +365,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -334.99994, y: 307}
+  m_AnchoredPosition: {x: -335, y: 307}
   m_SizeDelta: {x: -704, y: -966}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &297606273
@@ -985,7 +985,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -334.99994, y: 203.78305}
+  m_AnchoredPosition: {x: -335, y: 203.78305}
   m_SizeDelta: {x: -704, y: -966}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1148541545
@@ -2079,7 +2079,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -297.69, y: -323.9914}
+  m_AnchoredPosition: {x: -297.68994, y: -323.9914}
   m_SizeDelta: {x: -700.92, y: -1032}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2116600666
@@ -2285,9 +2285,25 @@ PrefabInstance:
       value: LevelManager
       objectReference: {fileID: 0}
     - target: {fileID: 5987717042715848805, guid: 0e4fb8d9dd76665419db81ed55705937, type: 3}
+      propertyPath: _sizeText
+      value: 
+      objectReference: {fileID: 1383956291}
+    - target: {fileID: 5987717042715848805, guid: 0e4fb8d9dd76665419db81ed55705937, type: 3}
       propertyPath: _AdsButton
       value: 
       objectReference: {fileID: 1508392217}
+    - target: {fileID: 5987717042715848805, guid: 0e4fb8d9dd76665419db81ed55705937, type: 3}
+      propertyPath: _flowsText
+      value: 
+      objectReference: {fileID: 2116600666}
+    - target: {fileID: 5987717042715848805, guid: 0e4fb8d9dd76665419db81ed55705937, type: 3}
+      propertyPath: _levelText
+      value: 
+      objectReference: {fileID: 1547022363}
+    - target: {fileID: 5987717042715848805, guid: 0e4fb8d9dd76665419db81ed55705937, type: 3}
+      propertyPath: _stepsText
+      value: 
+      objectReference: {fileID: 397955779}
     - target: {fileID: 5987717042715848805, guid: 0e4fb8d9dd76665419db81ed55705937, type: 3}
       propertyPath: _hintsButton
       value: 
@@ -2300,6 +2316,10 @@ PrefabInstance:
       propertyPath: _boardManager
       value: 
       objectReference: {fileID: 405818070}
+    - target: {fileID: 5987717042715848805, guid: 0e4fb8d9dd76665419db81ed55705937, type: 3}
+      propertyPath: _coverageText
+      value: 
+      objectReference: {fileID: 1160986763}
     - target: {fileID: 5987717042715848805, guid: 0e4fb8d9dd76665419db81ed55705937, type: 3}
       propertyPath: _undoMovement
       value: 
@@ -2343,11 +2363,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7451636109603945109, guid: 9740443e993334741b3e8daaf4cbf013, type: 3}
       propertyPath: levelCat
-      value: 0
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 7451636109603945109, guid: 9740443e993334741b3e8daaf4cbf013, type: 3}
       propertyPath: levelNum
-      value: 149
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7451636109603945109, guid: 9740443e993334741b3e8daaf4cbf013, type: 3}
       propertyPath: levelPack

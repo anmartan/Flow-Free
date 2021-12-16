@@ -22,6 +22,7 @@ namespace FlowFree
         private Tile[,] _tiles;                             // Tiles array so that they can be accessed later on.
 
         private List<Vector2Int>[] _solution;               // Solution to the puzzle. Containts a number of lists with the positions of the tiles in each flow.
+        private bool[] _hintsGiven;
 
         private bool _touching;                             // Whether the player is currently touching the board or not.        
         private bool _lastMoveChangedState;                 // Whether the last player changed the state of the aame or not.
@@ -35,6 +36,7 @@ namespace FlowFree
         private List<Vector2Int>[] _intermediateState;      // The state of the board the player will go back to if they hit the undo button.
         private List<Vector2Int>[] _lastState;              // The state of the board that is permanent (a.k.a. the player changed many moves ago).
 
+        private bool _stateChanged;
         private int _playerMovements;                       // The number of movements the player has used to solve the level. It changes in two situations:
                                                             // When the player touches a flow (or a circle), different from the last one they touched (playerMovements++).
                                                             // When the player undoes the last movement (playerMovements--).
@@ -52,6 +54,8 @@ namespace FlowFree
 
             // Creates the lists that will contain information about the board: the final solution, the current state and the previous state.
             _solution = new List<Vector2Int>[map.getFlowsNumber()];
+            _hintsGiven = new bool[map.getFlowsNumber()];
+            
             _currentState = new List<Vector2Int>[map.getFlowsNumber()];
             _intermediateState = new List<Vector2Int>[map.getFlowsNumber()];
             _lastState = new List<Vector2Int>[map.getFlowsNumber()];
@@ -59,6 +63,8 @@ namespace FlowFree
             for (int i = 0; i < map.getFlowsNumber(); i++)
             {
                 _solution[i] = new List<Vector2Int>();
+                _hintsGiven[i] = false;
+                
                 _currentState[i] = new List<Vector2Int>();
                 _intermediateState[i] = new List<Vector2Int>();
                 _lastState[i] = new List<Vector2Int>();
@@ -118,28 +124,7 @@ namespace FlowFree
 
         public void OnTouchStarted(Vector3 touch)
         {
-            // If the touch has just started, take this into consideration:
-            // If an empty tile is touched, nothing happens.
-            // If a tile is touched and there was a flow coming out from that tile, the rest of the flow has to be dissolved.
-            
-            Vector2Int pos = GetTileCoordinates(touch);
-            Tile tile = _tiles[pos.y, pos.x];
-            
-            int color = tile.GetColorIndex();
-            if (color == -1) return;
-
-            // If the tile touched is a circle, the whole flow is dissolved.
-            if (tile.IsCircle()) DissolveFlow(color);
-                
-            // If the tile touched was not the ending part of a flow, dissolves anything that came after it.
-            else if (_currentState[color].Count > 0) DissolveFlow(color, pos);
-
-            _currentColor = color;
-
-            // Add this flow to the list of changes.
-            AddFlow(pos);
-
-            _lastTile = pos;
+            StartFlow(GetTileCoordinates(touch));
             _touching = true;
         }
 
@@ -154,7 +139,115 @@ namespace FlowFree
             if(!_touching) return;
             
             // Calculates which tile the touch corresponds to.
-            Vector2Int pos = GetTileCoordinates(touch);
+            ContinueFlow(GetTileCoordinates(touch));
+
+        }
+
+        public void OnTouchFinished()
+        {
+            if(!_touching) return;
+            _stateChanged = false;   // The state did not change.
+   
+            // If the touch has finished (either because it was cancelled or becuase the player lifted their finger, take this into consideration:
+            // If there was any change in the flows, the number of movements has to increase.
+            
+            // If the hint was previously given and the flow is recovered, the stars are painted
+            if(_hintsGiven[_currentColor] && !StateChanged(_currentColor, _solution, _currentState)) SetStarsActive(_currentColor, true);
+
+            // If there was any change in the state, the state has to be saved.
+            if (StateChanged(_currentColor, _currentState, _lastState))
+            {
+                OnStateChanged();
+                return;
+            }
+                
+            _currentColor = _lastColor;
+            _touching = false;
+        }
+
+        public bool GetStateChanged() { return _stateChanged; }
+        private void OnStateChanged()
+        {
+            // If the state was changed in the last movement, it has to be saved before.
+            // This action will no longer be able to be undone.
+            if (_lastMoveChangedState)
+            {
+                SaveState(_intermediateState, _lastState);
+                _lastColor = _intermediateColor;
+                _lastMoveChangedState = false;
+            }
+
+            // The intermediate state is saved: the player will be able to come back to this one, if they hit the undo button.
+            SaveState(_currentState, _intermediateState);
+            _intermediateColor = _currentColor;
+            _lastMoveChangedState = true;
+
+            // If the change is considered a movement, the number of movements increases.
+            if (IsMovement()) _playerMovements++;
+
+            _stateChanged = true;
+        }
+        public void UndoMovement()
+        {
+            foreach (var list in _currentState)
+            {
+                foreach (var tile in list)
+                {
+                    _tiles[tile.y, tile.x].ResetState();
+                }
+            }
+            if (_currentColor != _lastColor) _playerMovements--;
+            SaveState(_lastState, _currentState);
+            if (_lastMoveChangedState) SaveState(_lastState, _intermediateState);
+
+            for (int i = 0; i < _currentState.Length; i++) 
+            {
+                SetStarsActive(i, false);
+                if(_hintsGiven[i] && !StateChanged(i, _solution, _currentState)) SetStarsActive(i, true);
+
+                for (int j = 0; j < _currentState[i].Count; j++)
+                {
+                    Vector2Int pos = _currentState[i][j];
+                    Tile tile = _tiles[pos.y, pos.x];
+                    tile.SetColor(i);
+                    if (j < _currentState[i].Count - 1)
+                    {
+                        Vector2Int nextPos = _currentState[i][j + 1];
+                        Vector2Int dir = pos - nextPos;
+                        CrossFlow(pos, dir);
+                    }
+                }
+            }
+            _lastMoveChangedState = false;
+        }
+
+        private void StartFlow(Vector2Int pos)
+        {
+            // If the touch has just started, take this into consideration:
+            // If an empty tile is touched, nothing happens.
+            // If a tile is touched and there was a flow coming out from that tile, the rest of the flow has to be dissolved.
+
+            Tile tile = _tiles[pos.y, pos.x];
+
+            int color = tile.GetColorIndex();
+            if (color == -1) return;
+            
+            // If the tile touched is a circle, the whole flow is dissolved.
+            if (tile.IsCircle()) DissolveFlow(color);
+                
+            // If the tile touched was not the ending part of a flow, dissolves anything that came after it.
+            else if (_currentState[color].Count > 0) DissolveFlow(color, pos);
+
+            _currentColor = color;
+
+            // Add this flow to the list of changes.
+            AddFlow(pos);
+
+            _lastTile = pos;
+        }
+
+        private void ContinueFlow(Vector2Int pos)
+        {
             Tile tile = _tiles[pos.y, pos.x];
             
             if(pos == _lastTile) return;
@@ -185,75 +278,7 @@ namespace FlowFree
             if(AddFlow(pos))    CrossFlow(pos, direction);
             _lastTile= pos;
         }
-
-        public bool OnTouchFinished()
-        {
-            if(!_touching) return false;
-            
-            // If the touch has finished (either because it was cancelled or becuase the player lifted their finger, take this into consideration:
-            // If there was any change in the flows, the number of movements has to increase.
-            
-            // If there was any change in the state, the state has to be saved.
-            if (StateChanged())
-            {
-                // If the state was changed in the last movement, it has to be saved before.
-                // This action will no longer be able to be undone.
-                if (_lastMoveChangedState)
-                {
-                    SaveState(_intermediateState, _lastState);
-                    _lastColor = _intermediateColor;
-                    _lastMoveChangedState = false;
-                }
-
-                // The intermediate state is saved: the player will be able to come back to this one, if they hit the undo button.
-                SaveState(_currentState, _intermediateState);
-                _intermediateColor = _currentColor;
-                _lastMoveChangedState = true;
-
-                // If the change is considered a movement, the number of movements increases.
-                if (IsMovement()) _playerMovements++;
-                
-                // If the state changed, returns true.
-                return true;
-            }
-                
-            _currentColor = _lastColor;
-            _touching = false;
-            return false;   // The state did not change.
-        }
         
-        public void UndoMovement()
-        {
-            foreach (var list in _currentState)
-            {
-                foreach (var tile in list)
-                {
-                    _tiles[tile.y, tile.x].ResetState();
-                }
-            }
-            if (_currentColor != _lastColor) _playerMovements--;
-            SaveState(_lastState, _currentState);
-            if (_lastMoveChangedState) SaveState(_lastState, _intermediateState);
-
-            for (int i = 0; i < _currentState.Length; i++) 
-            {
-                for (int j = 0; j < _currentState[i].Count; j++)
-                {
-                    Vector2Int pos = _currentState[i][j];
-                    Tile tile = _tiles[pos.y, pos.x];
-                    tile.SetColor(i);
-                    if (j < _currentState[i].Count - 1)
-                    {
-                        Vector2Int nextPos = _currentState[i][j + 1];
-                        Vector2Int dir = pos - nextPos;
-                        CrossFlow(pos, dir);
-                    }
-                }
-            }
-            _lastMoveChangedState = false;
-        }
-        
-
         /// <summary>
         /// Returns the row and column of the tile that is in touchPosition, in world units.
         /// </summary>
@@ -265,8 +290,8 @@ namespace FlowFree
             position = position - transform.position;
 
             // Calculates the tile clicked, using the integer part of each component of the vector
-            int row = Mathf.Clamp(Mathf.FloorToInt(-position.y), 0, _width - 1);
-            int column = Mathf.Clamp(Mathf.FloorToInt(position.x), 0, _height - 1);
+            int row = Mathf.Clamp(Mathf.FloorToInt(-position.y), 0, _height - 1);
+            int column = Mathf.Clamp(Mathf.FloorToInt(position.x), 0, _width - 1);
 
             return new Vector2Int(column, row);
         }
@@ -289,6 +314,9 @@ namespace FlowFree
         {
             // If it is not a valid color, there is nothing to do.
             if(colorIndex < 0 ) return;
+            
+            // Removes the stars from the tips of the flow, if there were any.
+            SetStarsActive(colorIndex, false);
             
             List<Vector2Int> flow = _currentState[colorIndex];
             int positionInList = flow.IndexOf(lastIncluded);
@@ -318,34 +346,34 @@ namespace FlowFree
                 }
             }
         }
-        private bool StateChanged()
+        private bool StateChanged(int colorIndex, List<Vector2Int>[] listA, List<Vector2Int>[] listB)
         {
             // If the flow only has one element, it is considered to be unchanged (as it has no effect in the game).
-            if (_currentState[_currentColor].Count <= 1 && _lastState[_currentColor].Count <= 1) return false;
+            if (listA[colorIndex].Count <= 1 && listB[colorIndex].Count <= 1) return false;
 
             // If the current flow and the previous one have different sizes, there has been some changes.
-            if (_currentState[_currentColor].Count != _lastState[_currentColor].Count) return true;
+            if (listA[colorIndex].Count != listB[colorIndex].Count) return true;
 
             // If the flow changed the start, there may have been a change.
-            int startIndex = _lastState[_currentColor].IndexOf(_currentState[_currentColor][0]);
+            int startIndex = listB[colorIndex].IndexOf(listA[colorIndex][0]);
 
             // If the previous flow does not contain the new one's start, the flow changed.
             if (startIndex == -1) return true;
 
             // If it is included, it needs to be in the same order (or inversed).
-            int size = _currentState[_currentColor].Count;
+            int size = listA[colorIndex].Count;
             if (startIndex == 0)
             {
                 for (int i = 0; i < size; i++)
                 {
-                    if (_currentState[_currentColor][i] != _lastState[_currentColor][i]) return true;
+                    if (listA[colorIndex][i] != listB[colorIndex][i]) return true;
                 }
             }
             else
             {
                 for (int i = 0; i < size; i++)
                 {
-                    if (_currentState[_currentColor][startIndex - i] != _lastState[_currentColor][i]) return true;
+                    if (listA[colorIndex][startIndex - i] != listB[colorIndex][i]) return true;
                 }
             }
 
@@ -458,6 +486,38 @@ namespace FlowFree
                 }
             }
             return true;
+        }
+
+        public bool UseHint()
+        {
+            int _lastHintGiven = 0;
+
+            for (int i = 0; i < _solution.Length; i++)
+            {
+                if (!_hintsGiven[i] && StateChanged(i, _solution, _currentState)) break;
+
+                _lastHintGiven++;
+            }
+            
+            if (_lastHintGiven >= _solution.Length) return false;
+            _hintsGiven[_lastHintGiven] = true;
+            
+            StartFlow(_solution[_lastHintGiven][0]);
+            for (int j = 1; j < _solution[_lastHintGiven].Count; j++) ContinueFlow(_solution[_lastHintGiven][j]);
+
+            _lastMoveChangedState = true;
+            OnStateChanged();
+            SetStarsActive(_lastHintGiven, true);
+            return true;
+        }
+
+        private void SetStarsActive(int colorIndex, bool active)
+        {
+            Vector2Int starTile = _solution[colorIndex][0];
+            _tiles[starTile.y, starTile.x].SetStarActive(active);
+
+            starTile = _solution[colorIndex][_solution[colorIndex].Count - 1];
+            _tiles[starTile.y, starTile.x].SetStarActive(active);
         }
     }
     

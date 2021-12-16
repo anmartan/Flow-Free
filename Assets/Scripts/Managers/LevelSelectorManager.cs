@@ -9,7 +9,7 @@ namespace FlowFree
     {
         [SerializeField] private LevelCategory _categoryPrefab;
         [SerializeField] private RectTransform _rectTransform;
-
+        
         private void Start()
         {
             Category[] categories = GameManager.Instance().GetAvailableCategories();

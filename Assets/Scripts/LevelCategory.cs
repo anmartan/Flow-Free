@@ -12,12 +12,15 @@ public class LevelCategory : MonoBehaviour
 
     [SerializeField] private LevelPackButton _buttonPrefab;
     
+    private Color _categoryColor;
+    
     public void InstantiateCategory(Category category)
     {
+        _categoryColor = category.color;
         _rectangleRenderer.color = category.shadeColor;
         _subrectangleRenderer.color = category.color;
         _titleText.text = category.categoryName;
-        Debug.Log(category.categoryName);
+        
         for (int i = 0; i < category.packs.Length; i++)
         {
             LevelPackButton button = Instantiate(_buttonPrefab, transform);

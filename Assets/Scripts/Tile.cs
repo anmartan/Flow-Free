@@ -14,6 +14,9 @@ namespace FlowFree
         [Tooltip("Sprite used for drawing the circles in the needed tiles.")]
         [SerializeField] private SpriteRenderer circle;
 
+        [Tooltip("Sprite used on top of the circles when a hint is given.")]
+        [SerializeField] private SpriteRenderer star;
+        
         private int connections = 0;
         private int colorIndex = -1;
         private Color color = Color.black;
@@ -25,6 +28,12 @@ namespace FlowFree
             circle.color = color;
             connections++;
         }
+
+        public void SetStarActive(bool active)
+        {
+            if (circle.enabled) star.enabled = active;
+        }
+        
         public void SetColor(int index)
         {
             colorIndex = index;

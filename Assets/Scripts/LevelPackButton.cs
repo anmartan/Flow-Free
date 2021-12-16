@@ -16,7 +16,7 @@ public class LevelPackButton : MonoBehaviour
         _levelPack = pack;
         _packName.text = pack.packName;
         int levelsNum = (pack.levels.ToString().Split('\n')).Length - 1;
-        _levels.text = "0/" + levelsNum;
+        _levels.text = _levelsSolved + "/" + levelsNum;
     }
 
     public void SetColor(Color color)

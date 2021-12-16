@@ -17,17 +17,33 @@ namespace FlowFree
         [SerializeField] private Button _nextLevelButton;
         [SerializeField] private Button _hintsButton;
 
+        [SerializeField] private Text _levelText;
+        [SerializeField] private Text _sizeText;
+        [SerializeField] private Text _flowsText;
+        [SerializeField] private Text _stepsText;
+        [SerializeField] private Text _coverageText;
+        
 
         private bool _hasNextLevel;
         private bool _hasPreviousLevel;
         
         private Map _currentMap;
 
-        public void CreateLevel(string map)
+        public void CreateLevel(LevelData data)
         {
             _currentMap = new Map();
-            
-            if (_currentMap.loadMap(map))    _boardManager.CreateBoard(_currentMap);
+
+            if (_currentMap.loadMap(data.level))
+            {
+                _boardManager.CreateBoard(_currentMap);
+                _levelText.text = "Level " + (data.levelNumber + 1);
+                _levelText.color = data.color;
+
+                _sizeText.text = _currentMap.getWidth() + "x" + _currentMap.getHeight();
+                _flowsText.text = "Flows: 0/" + _currentMap.getFlowsNumber();
+                _stepsText.text = "Steps: " + 0;
+                _coverageText.text = "Pipe: 0%";
+            }
             else Debug.LogError("Nivel incorrecto");
         }
         private void Update()
@@ -46,7 +62,8 @@ namespace FlowFree
             else if(touch.phase == TouchPhase.Moved) _boardManager.OnTouchMoved(touchPosition);
             else if (touch.phase == TouchPhase.Canceled || touch.phase == TouchPhase.Ended)
             {
-                if (_boardManager.OnTouchFinished()) _undoMovementButton.interactable = true;
+                _boardManager.OnTouchFinished();
+                if(_boardManager.GetStateChanged()) _undoMovementButton.interactable = true;
                 
                 if(_boardManager.LevelFinished()) Debug.Log("Aparcao");
             }
@@ -66,6 +83,14 @@ namespace FlowFree
         {
             
         }
-        
+
+        public void GiveHint()
+        {
+            if (GameManager.Instance().GetHints() >= 0 && _boardManager.UseHint()) GameManager.Instance().UseHint();
+
+            if (GameManager.Instance().GetHints() <= 0) _hintsButton.interactable = false;
+            
+            if(_boardManager.LevelFinished()) Debug.Log("Aparcao");
+        }
     }
 }

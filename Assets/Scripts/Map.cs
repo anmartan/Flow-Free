@@ -7,7 +7,6 @@ namespace FlowFree
 {
     public class Map
     {
-
         public bool loadMap(string level)
         {
             string[] splits = level.Split(';');
@@ -36,7 +35,7 @@ namespace FlowFree
                     int pos;
                     if (!int.TryParse(flowI[j], out pos)) return false;
 
-                    flows[i].Add(new Vector2Int(pos % width, pos / height));
+                    flows[i].Add(new Vector2Int(pos % width, pos / width));
 
                 }
             }
