@@ -14,7 +14,7 @@ public class LevelCategory : MonoBehaviour
     
     private Color _categoryColor;
     
-    public void InstantiateCategory(Category category)
+    public void InstantiateCategory(Category category, int categoryIndex)
     {
         _categoryColor = category.color;
         _rectangleRenderer.color = category.shadeColor;
@@ -24,7 +24,7 @@ public class LevelCategory : MonoBehaviour
         for (int i = 0; i < category.packs.Length; i++)
         {
             LevelPackButton button = Instantiate(_buttonPrefab, transform);
-            button.SetInformation(category.packs[i]);
+            button.SetInformation(category.packs[i], categoryIndex, i);
             button.SetColor(category.color);
         }
     }

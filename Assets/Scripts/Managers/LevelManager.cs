@@ -43,7 +43,7 @@ namespace FlowFree
                 _pipePercentage = 0;
                 
                 _boardManager.CreateBoard(_currentMap);
-                _levelText.text = "Level " + (data.levelNumber);
+                _levelText.text = "Level " + (_currentMap.getLevelInPage());
                 _levelText.color = data.color;
 
                 _sizeText.text = _currentMap.getWidth() + "x" + _currentMap.getHeight();

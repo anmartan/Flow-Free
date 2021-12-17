@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 627413174581046979}
   - component: {fileID: -742114577617495364}
-  - component: {fileID: 484612407731858376}
   m_Layer: 0
   m_Name: LevelSelectorManager
   m_TagString: Untagged
@@ -25,9 +24,9 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3301115815503763773}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.0069444445, y: 0.0069444445, z: 0.0069444445}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -49,31 +48,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8eca554419459ed46aef0808f4dd83c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _categoryPrefab: {fileID: 0}
-  _canvas: {fileID: 0}
---- !u!114 &484612407731858376
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3301115815503763773}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Padding:
-    m_Left: 0
-    m_Right: 0
-    m_Top: 0
-    m_Bottom: 0
-  m_ChildAlignment: 1
-  m_Spacing: 0
-  m_ChildForceExpandWidth: 1
-  m_ChildForceExpandHeight: 1
-  m_ChildControlWidth: 1
-  m_ChildControlHeight: 1
-  m_ChildScaleWidth: 0
-  m_ChildScaleHeight: 0
-  m_ReverseArrangement: 0
+  _categoryPrefab: {fileID: 731635448375358537, guid: a731d9112bf0b3e4b9013c07f0d03fa3, type: 3}
+  _UICategoriesParent: {fileID: 0}
+  _UIPagesParent: {fileID: 0}

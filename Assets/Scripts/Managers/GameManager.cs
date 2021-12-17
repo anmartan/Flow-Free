@@ -11,6 +11,7 @@ namespace FlowFree
         private static GameManager _instance;
         [SerializeField] private LevelManager _levelManager;
         [SerializeField] private BoardManager _boardManager;
+        [SerializeField] private LevelSelectorManager _levelSelectorManager;
         [SerializeField] private Category[] _levelCategories; // [TODO] llevar a un config.cs?
         [SerializeField] private Theme[] _themes;                // algo que se encargue de estas cosas
 
@@ -37,9 +38,15 @@ namespace FlowFree
             }
             else
             {
+                // TODO: Erase
+                levelCat = _instance.levelCat;
+                levelPack = _instance.levelPack ;
+                levelNum = _instance.levelNum;
+                
                 // Assigns the level manager and board manager that will be used in the new scene.
                 _instance._levelManager = _levelManager;
                 _instance._boardManager = _boardManager;
+                _instance._levelSelectorManager = _levelSelectorManager;
 
                 Destroy(this);
             }
@@ -81,6 +88,7 @@ namespace FlowFree
             return _themes[0];
         }
 
+        public LevelSelectorManager GetLevelSelectorManager() { return _levelSelectorManager; }
         public Category[] GetAvailableCategories()
         {
             return _levelCategories;
