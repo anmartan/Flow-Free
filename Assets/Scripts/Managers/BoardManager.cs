@@ -18,6 +18,8 @@ namespace FlowFree
         [Tooltip("Margin at the bottom of the screen screen left unused by the board, in pixels.")]
         [SerializeField] private GameObject _bottomMargin;   // Margins left at both sides of the screen, so that the board doesn't occupy the whole screen.
 
+        [SerializeField] private LevelManager _levelManager;
+        
         private int _width, _height;                        // Width and height of the board (in tiles).
 
         private Tile[,] _tiles;                             // Tiles array so that they can be accessed later on.
@@ -38,9 +40,6 @@ namespace FlowFree
         private List<Vector2Int>[] _lastState;              // The state of the board that is permanent (a.k.a. the player changed many moves ago).
 
         private bool _stateChanged;
-        private int _playerMovements;                       // The number of movements the player has used to solve the level. It changes in two situations:
-                                                            // When the player touches a flow (or a circle), different from the last one they touched (playerMovements++).
-                                                            // When the player undoes the last movement (playerMovements--).
 
         /// <summary>
         /// Creates a board the player can interact with. Creates the tiles and sets the initial circles, with the corresponding colors.
@@ -125,15 +124,15 @@ namespace FlowFree
             int size = (_width >= _height) ? _width : _height;
             _sceneCamera.orthographicSize = size + _topMargin.transform.lossyScale.y + _bottomMargin.transform.lossyScale.y;
                                             
-                                            /*
-                                             * 
+            /*
+              
             float size = _height * 0.5f + _topMargin.transform.lossyScale.y + _bottomMargin.transform.lossyScale.y;
             if (_sceneCamera.aspect * size < _width)
             {
                 size = (_width * 0.5f / _sceneCamera.aspect);
             }
             _sceneCamera.orthographicSize = size * 2;
-                                             */
+            */
         }
 
         public bool InsideBoundaries(Vector3 position)
@@ -203,7 +202,7 @@ namespace FlowFree
             _lastMoveChangedState = true;
 
             // If the change is considered a movement, the number of movements increases.
-            if (IsMovement()) _playerMovements++;
+            if (IsMovement()) _levelManager.ChangeMovements(1);
 
             _stateChanged = true;
         }
@@ -216,7 +215,7 @@ namespace FlowFree
                     _tiles[tile.y, tile.x].ResetState();
                 }
             }
-            if (_currentColor != _lastColor) _playerMovements--;
+            if (_currentColor != _lastColor) _levelManager.ChangeMovements(-1);
             SaveState(_lastState, _currentState);
             if (_lastMoveChangedState) SaveState(_lastState, _intermediateState);
 
@@ -545,6 +544,8 @@ namespace FlowFree
             starTile = _solution[colorIndex][_solution[colorIndex].Count - 1];
             _tiles[starTile.y, starTile.x].SetStarActive(active);
         }
+        
+        public void SetLevelManager(LevelManager manager) { _levelManager = manager; }
     }
     
 }

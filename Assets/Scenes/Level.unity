@@ -365,7 +365,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -335, y: 307}
+  m_AnchoredPosition: {x: -334.99994, y: 307}
   m_SizeDelta: {x: -704, y: -966}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &297606273
@@ -997,7 +997,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -335, y: 203.78305}
+  m_AnchoredPosition: {x: -334.99994, y: 203.78305}
   m_SizeDelta: {x: -704, y: -966}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1148541545
@@ -1508,7 +1508,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1508392218}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1389713200}
+        m_TargetAssemblyTypeName: FlowFree.LevelManager, Assembly-CSharp
+        m_MethodName: GetHintsByWatchingAds
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1508392218
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2091,7 +2103,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -297.68994, y: -323.9914}
+  m_AnchoredPosition: {x: -297.68988, y: -323.9914}
   m_SizeDelta: {x: -700.92, y: -1032}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2116600666
@@ -2187,6 +2199,10 @@ PrefabInstance:
       propertyPath: _bottomMargin
       value: 
       objectReference: {fileID: 604294762}
+    - target: {fileID: 853986636372757836, guid: 471594dd7a1aadd408870165fb41ead6, type: 3}
+      propertyPath: _levelManager
+      value: 
+      objectReference: {fileID: 1389713200}
     - target: {fileID: 853986636372757836, guid: 471594dd7a1aadd408870165fb41ead6, type: 3}
       propertyPath: verticalMargin
       value: 100
@@ -2374,41 +2390,13 @@ PrefabInstance:
       value: GameManager
       objectReference: {fileID: 0}
     - target: {fileID: 7451636109603945109, guid: 9740443e993334741b3e8daaf4cbf013, type: 3}
-      propertyPath: levelCat
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 7451636109603945109, guid: 9740443e993334741b3e8daaf4cbf013, type: 3}
-      propertyPath: levelNum
-      value: 31
-      objectReference: {fileID: 0}
-    - target: {fileID: 7451636109603945109, guid: 9740443e993334741b3e8daaf4cbf013, type: 3}
-      propertyPath: levelPack
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 7451636109603945109, guid: 9740443e993334741b3e8daaf4cbf013, type: 3}
-      propertyPath: boardManager
+      propertyPath: _boardManager
       value: 
       objectReference: {fileID: 405818070}
     - target: {fileID: 7451636109603945109, guid: 9740443e993334741b3e8daaf4cbf013, type: 3}
-      propertyPath: levelManager
+      propertyPath: _levelManager
       value: 
       objectReference: {fileID: 1389713200}
-    - target: {fileID: 7451636109603945109, guid: 9740443e993334741b3e8daaf4cbf013, type: 3}
-      propertyPath: themes.Array.data[0]
-      value: 
-      objectReference: {fileID: 11400000, guid: ced1adac13588bd4faef33ae87ee487b, type: 2}
-    - target: {fileID: 7451636109603945109, guid: 9740443e993334741b3e8daaf4cbf013, type: 3}
-      propertyPath: levelCategory.Array.size
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 7451636109603945109, guid: 9740443e993334741b3e8daaf4cbf013, type: 3}
-      propertyPath: levelCategory.Array.data[1]
-      value: 
-      objectReference: {fileID: 11400000, guid: 9a82fdc0ca1d89f4aa9d3ef9444028eb, type: 2}
-    - target: {fileID: 7451636109603945109, guid: 9740443e993334741b3e8daaf4cbf013, type: 3}
-      propertyPath: levelCategory.Array.data[2]
-      value: 
-      objectReference: {fileID: 11400000, guid: 47bd307bab3074442836ad2f42bf5504, type: 2}
     - target: {fileID: 7451636109603945110, guid: 9740443e993334741b3e8daaf4cbf013, type: 3}
       propertyPath: m_RootOrder
       value: 1

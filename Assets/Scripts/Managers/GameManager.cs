@@ -1,16 +1,23 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Advertisements;
 
 namespace FlowFree
 {
     public class GameManager : MonoBehaviour
     {
-        private static GameManager instance;
-        [SerializeField] private LevelManager levelManager;
-        [SerializeField] private BoardManager boardManager;
+        string gameID = "4510487";
+        
+        private static GameManager _instance;
+        [SerializeField] private LevelManager _levelManager;
+        [SerializeField] private BoardManager _boardManager;
         [SerializeField] private Category[] _levelCategories; // [TODO] llevar a un config.cs?
-        [SerializeField] private Theme[] themes;                // algo que se encargue de estas cosas
+        [SerializeField] private Theme[] _themes;                // algo que se encargue de estas cosas
 
+        [SerializeField] private Interstitial_Ad _interstitialAd;
+        [SerializeField] private Rewarded_Ad _rewardedAd;
+        [SerializeField] private Banner_Ad _bannerAd;
+        
         private int _hints = 3;
         public int levelCat = 0;
         public int levelPack = 0;
@@ -18,25 +25,26 @@ namespace FlowFree
 
         public static GameManager Instance()
         {
-            return instance;
+            return _instance;
         }
         private void Awake()
         {
-            if (instance == null)
+            if (_instance == null)
             {
-                instance = this;
+                _instance = this;
+                Advertisement.Initialize(gameID);
                 DontDestroyOnLoad(this.gameObject);
             }
             else
             {
                 // Assigns the level manager and board manager that will be used in the new scene.
-                instance.levelManager = levelManager;
-                instance.boardManager = boardManager;
+                _instance._levelManager = _levelManager;
+                _instance._boardManager = _boardManager;
 
                 Destroy(this);
             }
 
-            if (instance.boardManager) createLevel();
+            if (_instance._boardManager) createLevel();
         }
 
         public void NextLevel()
@@ -64,13 +72,13 @@ namespace FlowFree
             lel.color = _levelCategories[levelCat].color;
             lel.levelNumber = levelNum;
             lel.level = levels[levelNum];
-            if(levelManager) levelManager.CreateLevel(lel);
+            if(_levelManager) _levelManager.CreateLevel(lel);
         }
         
         // [TODO] getter pero bien
         public Theme getActualTheme()
         {
-            return themes[0];
+            return _themes[0];
         }
 
         public Category[] GetAvailableCategories()
@@ -84,5 +92,41 @@ namespace FlowFree
             if (_hints < 0) _hints = 0;
         }
         public int GetHints() { return _hints; }
+
+        public bool PlayIntersticialAd()
+        {
+            if (Advertisement.IsReady())
+            {
+                _interstitialAd.LoadAd();
+                _interstitialAd.ShowAd();
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool PlayRewardedAd()
+        {
+            if (Advertisement.IsReady())
+            {
+                _rewardedAd.LoadAd();
+                _rewardedAd.ShowAd();
+                return true;
+            }
+
+            return false;
+        }
+        
+        public bool PutBannerAdd()
+        {
+            if (Advertisement.IsReady())
+            {
+                _bannerAd.LoadBanner();
+                _bannerAd.ShowBannerAd();
+                return true;
+            }
+
+            return false;
+        }
     }
 }

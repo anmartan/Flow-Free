@@ -23,6 +23,10 @@ namespace FlowFree
         [SerializeField] private Text _stepsText;
         [SerializeField] private Text _coverageText;
         
+        private int _playerMovements;                       // The number of movements the player has used to solve the level. It changes in two situations:
+                                                            // When the player touches a flow (or a circle), different from the last one they touched (playerMovements++).
+                                                            // When the player undoes the last movement (playerMovements--).
+        private int _pipePercentage;
 
         private bool _hasNextLevel;
         private bool _hasPreviousLevel;
@@ -35,14 +39,17 @@ namespace FlowFree
 
             if (_currentMap.loadMap(data.level))
             {
+                _playerMovements = 0;
+                _pipePercentage = 0;
+                
                 _boardManager.CreateBoard(_currentMap);
-                _levelText.text = "Level " + (data.levelNumber + 1);
+                _levelText.text = "Level " + (data.levelNumber);
                 _levelText.color = data.color;
 
                 _sizeText.text = _currentMap.getWidth() + "x" + _currentMap.getHeight();
                 _flowsText.text = "Flows: 0/" + _currentMap.getFlowsNumber();
-                _stepsText.text = "Steps: " + 0;
-                _coverageText.text = "Pipe: 0%";
+                ChangeMovements(0);
+                _coverageText.text = "Pipe: " + _pipePercentage + " %";
             }
             else Debug.LogError("Nivel incorrecto");
         }
@@ -65,7 +72,7 @@ namespace FlowFree
                 _boardManager.OnTouchFinished();
                 if(_boardManager.GetStateChanged()) _undoMovementButton.interactable = true;
                 
-                if(_boardManager.LevelFinished()) Debug.Log("Aparcao");
+                if(_boardManager.LevelFinished()) FinishLevel();
             }
         }
         
@@ -84,13 +91,35 @@ namespace FlowFree
             
         }
 
+        public void ChangeMovements(int addition)
+        {
+            _playerMovements += addition;
+            if (_playerMovements < 0) _playerMovements = 0;
+
+            _stepsText.text = "Steps: " + _playerMovements;
+        }
         public void GiveHint()
         {
             if (GameManager.Instance().GetHints() >= 0 && _boardManager.UseHint()) GameManager.Instance().UseHint();
 
             if (GameManager.Instance().GetHints() <= 0) _hintsButton.interactable = false;
             
-            if(_boardManager.LevelFinished()) Debug.Log("Aparcao");
+            if(_boardManager.LevelFinished()) FinishLevel();
         }
+
+        private void FinishLevel()
+        {
+            GameManager.Instance().PlayIntersticialAd();
+        }
+
+        public void GetHintsByWatchingAds()
+        {
+            if (GameManager.Instance().PlayRewardedAd())
+            {
+                Debug.Log("PISTA");
+            }
+            else Debug.Log("NO PISTA");
+        }
+        
     }
 }
