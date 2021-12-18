@@ -14,6 +14,7 @@ public class UIPackButton : MonoBehaviour
     
     private LevelPack _levelPack;
     private int _levelsSolved;
+    private Color _color;
 
     public void SetInformation(LevelPack pack, int categoryIndex, int packIndex)
     {
@@ -28,10 +29,11 @@ public class UIPackButton : MonoBehaviour
     public void SetColor(Color color)
     {
         _packName.color = color;
+        _color = color;
     }
 
     public void OnClick()
     {
-        GameManager.Instance().GetLevelSelectorManager().ShowPages(_categoryIndex, _packIndex);
+        GameManager.Instance().GetLevelSelectorManager().ShowPages(_categoryIndex, _packIndex, _color);
     }
 }

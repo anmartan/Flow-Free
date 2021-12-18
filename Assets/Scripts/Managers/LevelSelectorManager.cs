@@ -23,7 +23,7 @@ namespace FlowFree
             _showingLevels = false;
             Category[] categories = GameManager.Instance().GetAvailableCategories();
 
-            int offsetY = 0;
+            int offsetY = _verticalLayoutConfiguration.padding.vertical;
             for (int i = 0; i < categories.Length; i++)
             {
                 UICategory newCategory = Instantiate(_categoryPrefab, _UICategoriesParent);
@@ -45,7 +45,7 @@ namespace FlowFree
             _UIPagesParent.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _initialLayoutWidth);
         }
 
-        public void ShowPages(int category, int pack)
+        public void ShowPages(int category, int pack, Color color)
         {
             for (int i = 0; i < _UIPagesParent.childCount; i++) Destroy(_UIPagesParent.GetChild(i).gameObject);
 
@@ -61,7 +61,7 @@ namespace FlowFree
             for (int i = 0; i < pagesNum; i++)
             {
                 UIPage newPage = Instantiate(_pagePrefab, _UIPagesParent);
-                newPage.InstantiatePage(category, pack, i);
+                newPage.InstantiatePage(category, pack, i, color);
 
                 offsetX += newPage.GetWidth() + _horizontalLayoutConfiguration.spacing;
             }

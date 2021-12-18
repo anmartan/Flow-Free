@@ -8,12 +8,13 @@ public class UIPage : MonoBehaviour
     [SerializeField] private UILevelButton _buttonPrefab;
     [SerializeField] private GridLayoutGroup _gridLayoutGroupConfiguration;
 
-    public void InstantiatePage(int category, int pack, int page)
+    public void InstantiatePage(int category, int pack, int page, Color color)
     {
         for (int i = 0; i < 30; i++)
         {
             UILevelButton button = Instantiate(_buttonPrefab, transform);
             button.SetInformation(category, pack, page * 30 + i);
+            // TODO: Set color
         }
     }
 

@@ -11,6 +11,7 @@ public class UICategory : MonoBehaviour
     [SerializeField] private Text _titleText;
 
     [SerializeField] private UIPackButton _buttonPrefab;
+    [SerializeField] private SpriteRenderer _buttonBackground;
     
     private Color _categoryColor;
     
@@ -27,5 +28,13 @@ public class UICategory : MonoBehaviour
             button.SetInformation(category.packs[i], categoryIndex, i);
             button.SetColor(category.color);
         }
+    }
+
+    public float GetHeight()
+    {
+        float ret = transform.childCount * _buttonBackground.size.y;
+        ret += _rectangleRenderer.sprite.rect.height;
+
+        return ret;
     }
 }

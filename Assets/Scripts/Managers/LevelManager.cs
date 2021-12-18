@@ -8,12 +8,13 @@ namespace FlowFree
         [SerializeField] private Camera _sceneCamera;
         [SerializeField] private BoardManager _boardManager;
         
-        [SerializeField] private Button _BackToMenuButton;
+        [SerializeField] private Button _backToMenuButton;
         
         [SerializeField] private Button _undoMovementButton;
         [SerializeField] private Button _previousLevelButton;
         [SerializeField] private Button _nextLevelButton;
         [SerializeField] private Button _hintsButton;
+        [SerializeField] private Text _hintsText;
 
         [SerializeField] private Text _levelText;
         [SerializeField] private Text _sizeText;
@@ -24,7 +25,6 @@ namespace FlowFree
         private int _playerMovements;                       // The number of movements the player has used to solve the level. It changes in two situations:
                                                             // When the player touches a flow (or a circle), different from the last one they touched (playerMovements++).
                                                             // When the player undoes the last movement (playerMovements--).
-        private int _pipePercentage;
 
         private bool _hasNextLevel;
         private bool _hasPreviousLevel;
@@ -38,16 +38,16 @@ namespace FlowFree
             if (_currentMap.loadMap(data.level))
             {
                 _playerMovements = 0;
-                _pipePercentage = 0;
                 
                 _boardManager.CreateBoard(_currentMap);
                 _levelText.text = "Level " + (data.levelNumber + 1);
                 _levelText.color = data.color;
 
                 _sizeText.text = _currentMap.getWidth() + "x" + _currentMap.getHeight();
-                _flowsText.text = "Flows: 0/" + _currentMap.getFlowsNumber();
-                ChangeMovements(0);
-                _coverageText.text = "Pipe: " + _pipePercentage + " %";
+                UpdateFlowsText(0);
+                ResetMovements();
+                UpdatePipePercentage(0);
+                UpdateHintsButton();
             }
             else Debug.LogError("Nivel incorrecto");
         }
@@ -89,18 +89,34 @@ namespace FlowFree
             
         }
 
-        public void ChangeMovements(int addition)
+        public void ResetMovements()
+        {
+            UpdateMovements(-_playerMovements);
+        }
+        public void UpdateMovements(int addition)
         {
             _playerMovements += addition;
-            if (_playerMovements < 0) _playerMovements = 0;
-
             _stepsText.text = "Steps: " + _playerMovements;
         }
+
+        public void UpdatePipePercentage(int newPercentage)
+        {
+            _coverageText.text = "Pipe: " + newPercentage + "%";
+        }
+
+        public void UpdateFlowsText(int flowsCompleted)
+        {
+            _flowsText.text = "Flows: " + flowsCompleted + " / " + _currentMap.getFlowsNumber();
+        }
+        
         public void GiveHint()
         {
-            if (GameManager.Instance().GetHints() >= 0 && _boardManager.UseHint()) GameManager.Instance().UseHint();
+            // Uses the hint if it is possible.
+            int hints = GameManager.Instance().GetHints();
+            if (hints >= 0 && _boardManager.UseHint()) GameManager.Instance().UseHint();
 
-            if (GameManager.Instance().GetHints() <= 0) _hintsButton.interactable = false;
+            // Updates the button and the text
+            UpdateHintsButton();
             
             if(_boardManager.LevelFinished()) FinishLevel();
         }
@@ -118,6 +134,16 @@ namespace FlowFree
             }
             else Debug.Log("NO PISTA");
         }
-        
+
+        public void GoBack()
+        {
+            GameManager.Instance().ToLevelSelectionScene();
+        }
+        private void UpdateHintsButton()
+        {
+            int hints = GameManager.Instance().GetHints();
+            _hintsText.text = hints + " x ";
+            if (hints <= 0) _hintsButton.interactable = false;
+        }
     }
 }

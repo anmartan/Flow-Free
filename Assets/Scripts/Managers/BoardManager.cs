@@ -40,6 +40,8 @@ namespace FlowFree
         private List<Vector2Int>[] _intermediateState;          // The state of the board the player will go back to if they hit the undo button.
         private List<Vector2Int>[] _lastState;                  // The state of the board that is permanent (a.k.a. the player changed many moves ago).
 
+        private int _usableTiles;
+        
         /// <summary>
         /// Creates a board the player can interact with. Creates the tiles and sets the initial circles, with the corresponding colors.
         /// Receives a map which has been previously loaded and includes the relevant information for the level.
@@ -47,12 +49,19 @@ namespace FlowFree
         /// <param name="map">A map with the level information.</param>
         public void CreateBoard(Map map)
         {
+            // Updates the information of the LevelManager.
+            _levelManager.ResetMovements();
+            _levelManager.UpdateFlowsText(0);
+            _levelManager.UpdatePipePercentage(0);
+            
             _width = map.getWidth();
             _height = map.getHeight();
             _tiles = new Tile[_height, _width];
             List<Tuple<Vector2Int, Vector2Int>> walls = map.GetWalls();
             List<Vector2Int> gaps = map.GetGaps();
 
+            _usableTiles = _width * _height - gaps.Count;
+            
             // Creates the lists that will contain information about the board: the final solution, the current state and the previous state.
             _solution = new List<Vector2Int>[map.getFlowsNumber()];
             _hintsGiven = new bool[map.getFlowsNumber()];
@@ -168,13 +177,16 @@ namespace FlowFree
             // If the hint was previously given and the flow is recovered, the stars are painted
             if(_hintsGiven[_currentColor] && !StateChanged(_currentColor, _solution, _currentState)) SetStarsActive(_currentColor, true);
 
+            // Updates the information of the levelManager
+            UpdateCompleteFlows();
+            
             // If there was any change in the state, the state has to be saved.
             if (StateChanged(_currentColor, _currentState, _lastState))
             {
                 OnStateChanged();
                 return;
             }
-                
+            
             _currentColor = _lastColor;
             _touching = false;
         }
@@ -194,7 +206,7 @@ namespace FlowFree
             }
             
             // If the movement undone was a movement, it is also undone.
-            if (_currentColor != _lastColor) _levelManager.ChangeMovements(-1);
+            if (_currentColor != _lastColor) _levelManager.UpdateMovements(-1);
             
             // Restores the last state.
             SaveState(_lastState, _currentState);
@@ -224,6 +236,10 @@ namespace FlowFree
                 }
             }
             _lastMoveChangedState = false;
+            
+            // Updates the information on the UI
+            UpdatePercentage();
+            UpdateCompleteFlows();
         }
         
         /// <summary>
@@ -315,7 +331,7 @@ namespace FlowFree
             _lastMoveChangedState = true;
 
             // If the change is considered a movement, the number of movements increases.
-            if (IsMovement()) _levelManager.ChangeMovements(1);
+            if (IsMovement()) _levelManager.UpdateMovements(1);
         }
 
         private void StartFlow(Vector2Int pos)
@@ -337,6 +353,9 @@ namespace FlowFree
 
             _currentColor = color;
 
+            // Updates the percentage of flows occupied
+            UpdatePercentage();
+            
             // Add this flow to the list of changes.
             AddFlow(pos);
 
@@ -383,6 +402,9 @@ namespace FlowFree
             // If the flow wasn't a part of the flow, it is drawn.
             if(AddFlow(pos))    CrossFlow(pos, direction);
             _lastTile= pos;
+            
+            // Updates the percentage of flows occupied
+            UpdatePercentage();
         }
         
         /// <summary>
@@ -586,7 +608,6 @@ namespace FlowFree
             return true;
         }
 
-        
         private void SetStarsActive(int colorIndex, bool active)
         {
             Vector2Int starTile = _solution[colorIndex][0];
@@ -595,8 +616,27 @@ namespace FlowFree
             starTile = _solution[colorIndex][_solution[colorIndex].Count - 1];
             _tiles[starTile.y, starTile.x].SetStarActive(active);
         }
-        
-        public void SetLevelManager(LevelManager manager) { _levelManager = manager; }
+
+        private void UpdatePercentage()
+        {
+            float tilesFlowing = 0;
+            for (int i = 0; i < _currentState.Length; i++) tilesFlowing += _currentState[i].Count;
+            
+            _levelManager.UpdatePipePercentage((int)(tilesFlowing * 100 / _usableTiles));
+        }
+
+        private void UpdateCompleteFlows()
+        {
+            int completeFlows = 0;
+            for (int i = 0; i < _currentState.Length; i++)
+            {
+                if (_currentState[i].Contains(_solution[i][0]))// &&
+                    if(_currentState[i].Contains(_solution[i][_solution[i].Count - 1]))
+                         completeFlows++;
+            }
+            
+            _levelManager.UpdateFlowsText(completeFlows);
+        }
     }
     
 }
