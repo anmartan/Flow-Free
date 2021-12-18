@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.Advertisements;
 
+// TODO: work out how this is supposed to be used.
 namespace FlowFree
 {
     public class Interstitial_Ad : MonoBehaviour, IUnityAdsLoadListener, IUnityAdsShowListener

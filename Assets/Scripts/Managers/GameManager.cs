@@ -4,6 +4,8 @@ using UnityEngine.Advertisements;
 
 namespace FlowFree
 {
+    // TODO: Comment everything
+    // TODO: Remove unnecessary fields, methods, etc.
     public class GameManager : MonoBehaviour
     {
         string gameID = "4510487";
@@ -85,19 +87,21 @@ namespace FlowFree
             string[] levels = text.ToString().Split('\n');
 
             LevelData lel;
-            lel.color = _levelCategories[levelCat].color;
-            lel.levelNumber = levelNum;
-            lel.level = levels[levelNum];
+            lel.LevelNumber = levelNum;
+            lel.PackNumber = levelPack;
+            lel.CategoryNumber = levelCat;
+            lel.Data = levels[levelNum];
+            lel.Color = _levelCategories[levelCat].color;
+            lel.BestSolve = 0;
+            lel.State = LevelState.UNSOLVED;
             if(_levelManager) _levelManager.CreateLevel(lel);
         }
         
-        // [TODO] getter pero bien
-        public Theme getActualTheme()
-        {
-            return _theme;
-        }
+        public Theme getActualTheme() { return _theme; }
 
         public LevelSelectorManager GetLevelSelectorManager() { return _levelSelectorManager; }
+        public LevelManager GetLevelManager() { return _levelManager; }
+        public BoardManager GetBoardManager() { return _boardManager; }
         public Category[] GetAvailableCategories()
         {
             return _levelCategories;

@@ -1,8 +1,7 @@
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.Advertisements;
-using UnityEngine.Advertisements.Platform.Editor;
 
+// TODO: work out how this is supposed to be used.
 namespace FlowFree
 {
     public class Banner_Ad : MonoBehaviour

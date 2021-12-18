@@ -12,7 +12,7 @@ namespace FlowFree
 		[Tooltip("Color for the category when it's shown in the menu.")]
 		public Color color;
 
-		[Tooltip("Shade of the color for the category when it's shown in the menu.")]
+		[Tooltip("Shade of the _color for the category when it's shown in the menu.")]
 		public Color shadeColor;
 
 		[Tooltip("Packs that appear in this category.")]

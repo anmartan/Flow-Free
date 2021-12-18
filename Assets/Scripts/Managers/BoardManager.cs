@@ -18,8 +18,7 @@ namespace FlowFree
         [Tooltip("Margin at the bottom of the screen screen left unused by the board, in pixels.")]
         [SerializeField] private GameObject _bottomMargin;      // Margins left at both sides of the screen, so that the board doesn't occupy the whole screen.
 
-        [Tooltip("Instance of the Level Manager, so that it is not necessary to call the Game Manager in order to access it.")]
-        [SerializeField] private LevelManager _levelManager;    // Level manager instance, so that it is not necessary to call the GameManager constantly.
+        private LevelManager _levelManager;                     // Level manager instance, so that it is not necessary to call the GameManager constantly.
         
         private int _width, _height;                            // Width and height of the board (in tiles).
 
@@ -32,16 +31,19 @@ namespace FlowFree
         private bool _lastMoveChangedState;                     // Whether the last player changed the state of the aame or not.
         private Vector2Int _lastTile;                           // The last tile the player interacted with (either by pressing, moving or releasing the screen).
 
-        private int _currentColor;                              // The color index of the flow the player is currently touching.
-        private int _intermediateColor;                         // The color index of the flow the player changed in the intermediate state.
-        private int _lastColor;                                 // The color index of the flow the player changed in the last state.
+        private int _currentColor;                              // The _color index of the flow the player is currently touching.
+        private int _intermediateColor;                         // The _color index of the flow the player changed in the intermediate state.
+        private int _lastColor;                                 // The _color index of the flow the player changed in the last state.
 
         private List<Vector2Int>[] _currentState;               // The state of the board the player is currently changing.
         private List<Vector2Int>[] _intermediateState;          // The state of the board the player will go back to if they hit the undo button.
         private List<Vector2Int>[] _lastState;                  // The state of the board that is permanent (a.k.a. the player changed many moves ago).
 
-        private int _usableTiles;
+        private int _usableTiles;                               // The number of tiles the player can interact with. That is, all the tiles in the board, except for those which are gaps.
         
+        
+        // ----- PUBLIC METHODS ----- //
+
         /// <summary>
         /// Creates a board the player can interact with. Creates the tiles and sets the initial circles, with the corresponding colors.
         /// Receives a map which has been previously loaded and includes the relevant information for the level.
@@ -49,6 +51,8 @@ namespace FlowFree
         /// <param name="map">A map with the level information.</param>
         public void CreateBoard(Map map)
         {
+            _levelManager = GameManager.Instance().GetLevelManager();
+            
             // Updates the information of the LevelManager.
             _levelManager.ResetMovements();
             _levelManager.UpdateFlowsText(0);
@@ -98,14 +102,14 @@ namespace FlowFree
                 }
             }
 
-            // Sets the colors for each circle. Gets the color according to the theme,
-            // And paints the circles at both the beginning and the end of the flow with such color.
+            // Sets the colors for each circle. Gets the _color according to the theme,
+            // And paints the circles at both the beginning and the end of the flow with such _color.
             for (int i = 0; i < map.getFlowsNumber(); i++)
             {
                 _solution[i] = map.getFlows()[i];
 
-                _tiles[_solution[i][0].y, _solution[i][0].x].PutCircle(i);
-                _tiles[_solution[i][_solution[i].Count - 1].y, _solution[i][_solution[i].Count - 1].x].PutCircle(i);
+                _tiles[_solution[i][0].y, _solution[i][0].x].SetCircle(i);
+                _tiles[_solution[i][_solution[i].Count - 1].y, _solution[i][_solution[i].Count - 1].x].SetCircle(i);
             }
 
             // Sets the gaps in the board; they will not be interactable.
@@ -171,13 +175,13 @@ namespace FlowFree
         /// </summary>
         public void OnTouchFinished()
         {
-            // If the touch started outside the board, nothing happens
+            // If the touch started outside the board, nothing happens.
             if(!_touching) return;
    
-            // If the hint was previously given and the flow is recovered, the stars are painted
+            // If the hint was previously given and the flow is recovered, the stars are painted.
             if(_hintsGiven[_currentColor] && !StateChanged(_currentColor, _solution, _currentState)) SetStarsActive(_currentColor, true);
 
-            // Updates the information of the levelManager
+            // Updates the information of the levelManager.
             UpdateCompleteFlows();
             
             // If there was any change in the state, the state has to be saved.
@@ -201,7 +205,7 @@ namespace FlowFree
                 foreach (Vector2Int tile in list)
                 {
                     // Clears the tile completely.
-                    _tiles[tile.y, tile.x].ResetState();
+                    _tiles[tile.y, tile.x].Dissolve(false);
                 }
             }
             
@@ -237,7 +241,7 @@ namespace FlowFree
             }
             _lastMoveChangedState = false;
             
-            // Updates the information on the UI
+            // Updates the information on the UI.
             UpdatePercentage();
             UpdateCompleteFlows();
         }
@@ -277,7 +281,9 @@ namespace FlowFree
             return true;
         }
         
-        // - GETTERS -
+        
+        // ----- PUBLIC INFO ENQUIRY METHODS ----- //
+        
         /// <summary>
         /// Checks whether the position given corresponds to the board or not. Used to filter input.
         /// </summary>
@@ -301,6 +307,8 @@ namespace FlowFree
                 for(int j = 0; j < _solution[i].Count; j++)
                 {
                     Vector2Int tile = _solution[i][j];
+                    
+                    // If the tile is not the same color, or is not connected to other tiles, the level has not finished.
                     if (_tiles[tile.y, tile.x].GetColorIndex() != i || !_tiles[tile.y, tile.x].IsFullyConnected()) return false;
                 }
             }
@@ -313,7 +321,14 @@ namespace FlowFree
         /// <returns>true if the state changed; false otherwise.</returns>
         public bool GetStateChanged() { return _lastMoveChangedState; }
         
-        // - PRIVATE - //
+        
+        // ----- PRIVATE METHODS ----- //
+        
+        /// <summary>
+        /// What happens when the state of the board changed with the last movement.
+        /// The state is saved (if there were previous actions, they are no longer undoable).
+        /// Updates the number of movements, if necessary.
+        /// </summary>
         private void OnStateChanged()
         {
             // If the state was changed in the last movement, it has to be saved before.
@@ -331,17 +346,21 @@ namespace FlowFree
             _lastMoveChangedState = true;
 
             // If the change is considered a movement, the number of movements increases.
-            if (IsMovement()) _levelManager.UpdateMovements(1);
+            if (_currentColor != _lastColor) _levelManager.UpdateMovements(1);
         }
 
+        /// <summary>
+        /// Starts a flow in the given tile.
+        /// Takes this into consideration:
+        /// If an empty tile is touched, nothing happens.
+        /// If a tile is touched and there was a flow coming out from that tile, the rest of the flow has to be dissolved.
+        /// </summary>
+        /// <param name="pos">Position of the tile that will start the flow.</param>
         private void StartFlow(Vector2Int pos)
         {
-            // If the touch has just started, take this into consideration:
-            // If an empty tile is touched, nothing happens.
-            // If a tile is touched and there was a flow coming out from that tile, the rest of the flow has to be dissolved.
-
             Tile tile = _tiles[pos.y, pos.x];
 
+            // If the tile does not have a color, it cannot start a flow.
             int color = tile.GetColorIndex();
             if (color == -1) return;
             
@@ -363,7 +382,8 @@ namespace FlowFree
         }
 
         /// <summary>
-        /// If the touch is moving, take this into consideration:
+        /// Makes the current flow grow to the given tile.
+        /// Takes this into consideration:
         /// If it is not a valid movement (for any reason), nothing happens.
         /// If the flow cuts a part of itself, the flow has to be correctly dissolved.
         /// If the flow cuts another flow, it has to be correctly dissolved.
@@ -379,6 +399,8 @@ namespace FlowFree
             
             // If it is not a valid movement, there is nothing to do.
             if (!ValidMovement(pos)) return;
+            
+            // Calculates the direction of the movement.
             Vector2Int direction = pos - _lastTile;
 
             // If there is a flow prior to this movement, some part of the flow has to be dissolved.
@@ -387,7 +409,7 @@ namespace FlowFree
             {
                 int positionInList = _currentState[previousColor].IndexOf(pos);
 
-                // If the flow is the same color, and it is not the missing circle it is removed until this position.
+                // If the flow is the same color, and it is not the missing circle, it is removed until this position.
                 if (previousColor == _currentColor && !tile.IsCircle() || pos == _currentState[_currentColor][0])
                 {
                     DissolveFlow(previousColor, _currentState[previousColor][positionInList]);
@@ -406,22 +428,52 @@ namespace FlowFree
             // Updates the percentage of flows occupied
             UpdatePercentage();
         }
+
+        /// <summary>
+        /// Adds the tile to the current flow, if possible.
+        /// </summary>
+        /// <param name="lastTile">The tile to be added.</param>
+        /// <returns>true if the tile was added; false if the tile was already a part of that flow.</returns>
+        private bool AddFlow(Vector2Int lastTile)
+        {
+            return AddFlow(_currentColor, lastTile);
+        }
         
         /// <summary>
-        /// Returns the row and column of the tile that is in touchPosition, in world units.
+        /// Adds the tile to a specific flow, if possible.
         /// </summary>
-        /// <param name="position">The position of the tile, in world units.</param>
-        /// <returns>The position of the tile, in the array of tiles. (column, row)</returns>
-        private Vector2Int GetTileCoordinates(Vector3 position)
+        /// <param name="colorIndex">The index of the flow to which the tile will be added.</param>
+        /// <param name="lastTile">The tile that will be added.</param>
+        /// <returns>true if the tile was added; false if the tile was already a part of that flow.</returns>
+        private bool AddFlow(int colorIndex,Vector2Int lastTile)
         {
-            // Removes the offset, so that the touch is in the range [(0,0), (_width, _height)]
-            position = position - transform.position;
+            // Finds the flow with that index.
+            List<Vector2Int> flow = _currentState[colorIndex];
 
-            // Calculates the tile clicked, using the integer part of each component of the vector
-            int row = Mathf.Clamp(Mathf.FloorToInt(-position.y), 0, _height - 1);
-            int column = Mathf.Clamp(Mathf.FloorToInt(position.x), 0, _width - 1);
+            // If the tile is that flow, it cannot be added again.
+            if (flow.Contains(lastTile)) return false;
 
-            return new Vector2Int(column, row);
+            // Adds the tile to the flow, and sets its color.
+            flow.Add(lastTile);
+            _tiles[lastTile.y, lastTile.x].SetColor(colorIndex);
+
+            return true;
+        }
+        
+        /// <summary>
+        /// Makes a bridge appear between the tile in the given position, and the next tile in the given direction.
+        /// </summary>
+        /// <param name="position"> Position of the tile where the bridge will be added.</param>
+        /// <param name="direction">The direction in which the flow will be expanded.</param>
+        private void CrossFlow(Vector2Int position, Vector2Int direction)
+        {
+            // Puts the flow in the tile, in the given direction.
+            Tile tile = _tiles[position.y, position.x];
+            tile.SetFlowActive(direction, true);
+            
+            // Puts the flow in the next tile, in the opposite direction.
+            tile = _tiles[position.y - direction.y, position.x - direction.x];
+            tile.SetFlowActive(-direction, true);
         }
 
         /// <summary>
@@ -440,7 +492,7 @@ namespace FlowFree
         /// <param name="lastIncluded">The position of the last tile that will be preserved. Everything from this point onwards will be dissolved. </param>
         private void DissolveFlow(int colorIndex, Vector2Int lastIncluded)
         {
-            // If it is not a valid color, there is nothing to do.
+            // If it is not a valid _color, there is nothing to do.
             if(colorIndex < 0 ) return;
             
             // Removes the stars from the tips of the flow, if there were any.
@@ -463,17 +515,115 @@ namespace FlowFree
             flow.RemoveRange(positionInList + 1, flow.Count - (positionInList + 1));
         }
 
+        /// <summary>
+        /// Tries to restore the flow that appeared in the last state in the given position.
+        /// Used when the player is moving the finger over an existing flow (and therefore breaks it), but then moves back.
+        /// </summary>
+        /// <param name="tilePosition"> Position of the tile that will be restored.</param>
+        private void RestoreFlow(Vector2Int tilePosition)
+        {
+            int i = 0;
+
+            // Finds the flow that existed in the intermediate state, before cutting it.
+            while(i < _intermediateState.Length)
+            {
+                if (_intermediateState[i].Contains(tilePosition)) break;
+                i++;
+            }
+            
+            // If there was no flow, nothing can be restored.
+            if (i >= _intermediateState.Length) return;
+
+            // If it is not connected to the actual flow, nothing to do.
+            int lastTile = _currentState[i].Count - 1;
+            int currentTile = _intermediateState[i].IndexOf(tilePosition);
+            
+            // TODO: fix when the player moves forward and then cuts themselves.
+            // TODO: The distance is bigger than 1, but it can be connected.
+            if (currentTile - lastTile > 1) return;
+            currentTile--;
+
+            // Starts running over the intermediate flow, restoring every possible tile.
+            while (currentTile < _intermediateState[i].Count - 1)  
+            {
+                Vector2Int pos = _intermediateState[i][currentTile];
+                Tile tile = _tiles[pos.y, pos.x];
+                Vector2Int nextPos = _intermediateState[i][currentTile + 1];
+                Vector2Int dir = pos - nextPos;
+
+                // If the tile is being used by the current flow, it cannot be restored.
+                if(_currentState[_currentColor].Contains(pos)) return;
+                
+                // Adds the tile to the previous flow.
+                tile.SetColor(i);
+                AddFlow(i, pos);
+
+                // If the next tile is being used by the current flow, the previous one cannot grow.
+                if (!_currentState[_currentColor].Contains(nextPos)) CrossFlow(pos, dir);
+                else return;
+                
+                currentTile++;
+            }
+            AddFlow(i, _intermediateState[i][currentTile]);
+        }
+        
+        /// <summary>
+        /// Copies the state from one list to another. Used to save the current state into the intermediate one, and
+        /// from that one to the lastState one.
+        /// </summary>
+        /// <param name="from">List that will be copied.</param>
+        /// <param name="to">List that will be overwritten.</param>
         private void SaveState(List<Vector2Int>[] from, List<Vector2Int>[] to)
         {
             for (int i = 0; i < from.Length; i++)
             {
+                // Completely erases the list that will be overwritten.
                 to[i].Clear();
                 for (int j = 0; j < from[i].Count; j++)
                 {
+                    // Adds every item from the list that is copied to the other list.
                     to[i].Add(new Vector2Int(from[i][j].x, from[i][j].y));
                 }
             }
         }
+        
+        /// <summary>
+        /// Updates the percentage of tiles currently used, and calls the Level Manager to show the updated number.
+        /// </summary>
+        private void UpdatePercentage()
+        {
+            float tilesFlowing = 0;
+            for (int i = 0; i < _currentState.Length; i++) tilesFlowing += _currentState[i].Count;
+            
+            _levelManager.UpdatePipePercentage((int)(tilesFlowing * 100 / _usableTiles));
+        }
+
+        /// <summary>
+        /// Updates the number of flows that are completely connected, and calls the Level Manager to show the updated number.
+        /// </summary>
+        private void UpdateCompleteFlows()
+        {
+            int completeFlows = 0;
+            for (int i = 0; i < _currentState.Length; i++)
+            {
+                if (_currentState[i].Contains(_solution[i][0]))// &&
+                    if(_currentState[i].Contains(_solution[i][_solution[i].Count - 1]))
+                         completeFlows++;
+            }
+            
+            _levelManager.UpdateFlowsText(completeFlows);
+        }
+        
+        
+        // ----- PRIVATE INFO ENQUIRY METHODS ----- //
+        
+        /// <summary>
+        /// Compares the flow with the given index, between two states, to see if there is any change among them.
+        /// </summary>
+        /// <param name="colorIndex"> The index of the flow that will be compared.</param>
+        /// <param name="listA">One of the states to compare with.</param>
+        /// <param name="listB">The other state to compare with.</param>
+        /// <returns>true if there is a change between the two states; false if the flow remained the same.</returns>
         private bool StateChanged(int colorIndex, List<Vector2Int>[] listA, List<Vector2Int>[] listB)
         {
             // If the flow only has one element, it is considered to be unchanged (as it has no effect in the game).
@@ -505,83 +655,16 @@ namespace FlowFree
                 }
             }
 
+            // If everything else did not change, it is safe to assume the state did not change.
             return false;
         }
-
-        private bool IsMovement()
-        {
-            return _currentColor != _lastColor;
-        }
-
-        private bool AddFlow(Vector2Int lastTile)
-        {
-            return AddFlow(_currentColor, lastTile);
-        }
-        private bool AddFlow(int colorIndex,Vector2Int lastTile)
-        {
-
-            List<Vector2Int> flow = _currentState[colorIndex];
-
-            if (flow.Contains(lastTile)) return false;
-
-            // Si no esta en la lista, lo anadimos y le ponemos el color
-            flow.Add(lastTile);
-
-            Tile tile = _tiles[lastTile.y, lastTile.x];
-            tile.SetColor(colorIndex);
-
-            return true;
-        }
-        private void CrossFlow(Vector2Int position, Vector2Int direction)
-        {
-            Tile tile = _tiles[position.y, position.x];
-            tile.SetFlowActive(direction, true);
-            
-            tile = _tiles[position.y - direction.y, position.x - direction.x];
-            tile.SetFlowActive(-direction, true);
-        }
-
-        private void RestoreFlow(Vector2Int tilePosition)
-        {
-            int i = 0;
-
-            while(i < _intermediateState.Length)
-            {
-                if (_intermediateState[i].Contains(tilePosition)) break;
-                i++;
-            }
-            
-            if (i >= _intermediateState.Length) return;
-
-            // If it is not connected to the actual flow, nothing to do.
-            int lastTile = _currentState[i].Count - 1;
-            int currentTile = _intermediateState[i].IndexOf(tilePosition);
-
-            if (currentTile - lastTile > 1) return;
-            currentTile--;
-
-            while (currentTile < _intermediateState[i].Count - 1)  
-            {
-                Vector2Int pos = _intermediateState[i][currentTile];
-                Tile tile = _tiles[pos.y, pos.x];
-                Vector2Int nextPos = _intermediateState[i][currentTile + 1];
-                Vector2Int dir = pos - nextPos;
-
-                if (!_currentState[_currentColor].Contains(pos))
-                {
-                    tile.SetColor(i);
-                    AddFlow(i, pos);
-
-                    // Si la siguiente tile del estado actual es del color actual, no te hago cross
-                    if (!_currentState[_currentColor].Contains(nextPos)) CrossFlow(pos, dir);
-                    else return;
-                }
-                else return;
-
-                currentTile++;
-            }
-            AddFlow(i, _intermediateState[i][currentTile]);
-        }
+        
+        /// <summary>
+        /// Checks that the movement is a valid one: that is, that the current tile is connected to the last one,
+        /// and that the movement does not break any rule.
+        /// </summary>
+        /// <param name="pos">Position of the tile that will be checked.</param>
+        /// <returns>true if the movement is valid; false if the flow cannot grow onto that tile.</returns>
         private bool ValidMovement(Vector2Int pos)
         {
             // If it is a gap, the player cannot move there.
@@ -592,7 +675,7 @@ namespace FlowFree
 
             int flowIndex = _tiles[_lastTile.y, _lastTile.x].GetColorIndex();
 
-            // If there is a circle of another color in the actual tile, the flow cannot grow.
+            // If there is a circle of another _color in the actual tile, the flow cannot grow.
             if (_tiles[pos.y, pos.x].IsCircle() && flowIndex != _tiles[pos.y, pos.x].GetColorIndex()) return false;
 
             // If there is a wall between the last tile and the current position, the flow cannot grow.
@@ -608,6 +691,28 @@ namespace FlowFree
             return true;
         }
 
+        /// <summary>
+        /// Returns the row and column of the tile that is in touchPosition, in world units.
+        /// </summary>
+        /// <param name="position">The position of the tile, in world units.</param>
+        /// <returns>The position of the tile, in the array of tiles. (column, row)</returns>
+        private Vector2Int GetTileCoordinates(Vector3 position)
+        {
+            // Removes the offset, so that the touch is in the range [(0,0), (_width, _height)]
+            position -= transform.position;
+
+            // Calculates the tile clicked, using the integer part of each component of the vector
+            int row = Mathf.Clamp(Mathf.FloorToInt(-position.y), 0, _height - 1);
+            int column = Mathf.Clamp(Mathf.FloorToInt(position.x), 0, _width - 1);
+
+            return new Vector2Int(column, row);
+        }
+        
+        /// <summary>
+        /// Changes the visibility of the stars in a given flow.
+        /// </summary>
+        /// <param name="colorIndex">Flow that will activate or deactivate the stars.</param>
+        /// <param name="active">Whether the stars shall remain active or not.</param>
         private void SetStarsActive(int colorIndex, bool active)
         {
             Vector2Int starTile = _solution[colorIndex][0];
@@ -615,27 +720,6 @@ namespace FlowFree
 
             starTile = _solution[colorIndex][_solution[colorIndex].Count - 1];
             _tiles[starTile.y, starTile.x].SetStarActive(active);
-        }
-
-        private void UpdatePercentage()
-        {
-            float tilesFlowing = 0;
-            for (int i = 0; i < _currentState.Length; i++) tilesFlowing += _currentState[i].Count;
-            
-            _levelManager.UpdatePipePercentage((int)(tilesFlowing * 100 / _usableTiles));
-        }
-
-        private void UpdateCompleteFlows()
-        {
-            int completeFlows = 0;
-            for (int i = 0; i < _currentState.Length; i++)
-            {
-                if (_currentState[i].Contains(_solution[i][0]))// &&
-                    if(_currentState[i].Contains(_solution[i][_solution[i].Count - 1]))
-                         completeFlows++;
-            }
-            
-            _levelManager.UpdateFlowsText(completeFlows);
         }
     }
     

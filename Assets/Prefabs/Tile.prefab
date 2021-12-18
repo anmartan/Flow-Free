@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 249647978530010319}
   - component: {fileID: 7930343275225118372}
   m_Layer: 0
-  m_Name: RightWall
+  m_Name: EastWall
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -216,15 +216,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69bf5c123c3c07e4c9d48dd7d3a887f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  background: {fileID: 1623830416500998292}
-  entranceFlow: {fileID: 1243979970919683850}
-  exitFlow: {fileID: 6346748784492903873}
-  circle: {fileID: 447596864704960640}
-  star: {fileID: 5216634586539184794}
-  northWall: {fileID: 8605758266796922180}
-  southWall: {fileID: 5191967016819379194}
-  eastWall: {fileID: 7930343275225118372}
-  westWall: {fileID: 9124779249692668781}
+  _background: {fileID: 1623830416500998292}
+  _entranceFlow: {fileID: 1243979970919683850}
+  _exitFlow: {fileID: 6346748784492903873}
+  _circle: {fileID: 447596864704960640}
+  _star: {fileID: 5216634586539184794}
+  _northWall: {fileID: 8605758266796922180}
+  _southWall: {fileID: 5191967016819379194}
+  _eastWall: {fileID: 7930343275225118372}
+  _westWall: {fileID: 9124779249692668781}
 --- !u!212 &1623830416500998292
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -287,7 +287,7 @@ GameObject:
   - component: {fileID: 4829425399166348165}
   - component: {fileID: 8605758266796922180}
   m_Layer: 0
-  m_Name: UpperWall
+  m_Name: NorthWall
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -451,7 +451,7 @@ GameObject:
   - component: {fileID: 4042566303558899429}
   - component: {fileID: 5191967016819379194}
   m_Layer: 0
-  m_Name: BottomWall
+  m_Name: SouthWall
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -697,7 +697,7 @@ GameObject:
   - component: {fileID: 8239379814819313216}
   - component: {fileID: 9124779249692668781}
   m_Layer: 0
-  m_Name: LeftWall
+  m_Name: WestWall
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

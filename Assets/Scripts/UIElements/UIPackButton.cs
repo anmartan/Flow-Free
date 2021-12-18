@@ -1,39 +1,39 @@
-using System.Collections;
-using System.Collections.Generic;
-using FlowFree;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UIPackButton : MonoBehaviour
+namespace FlowFree
 {
-    [SerializeField] private Text _packName;
-    [SerializeField] private Text _levels;
-
-    private int _categoryIndex;
-    private int _packIndex;
-    
-    private LevelPack _levelPack;
-    private int _levelsSolved;
-    private Color _color;
-
-    public void SetInformation(LevelPack pack, int categoryIndex, int packIndex)
+    public class UIPackButton : MonoBehaviour
     {
-        _levelPack = pack;
-        _packName.text = pack.packName;
-        int levelsNum = (pack.levels.ToString().Split('\n')).Length - 1;
-        _levels.text = _levelsSolved + "/" + levelsNum;
-        _categoryIndex = categoryIndex;
-        _packIndex = packIndex;
-    }
+        [SerializeField] private Text _packName;
+        [SerializeField] private Text _levels;
 
-    public void SetColor(Color color)
-    {
-        _packName.color = color;
-        _color = color;
-    }
+        private int _categoryIndex;
+        private int _packIndex;
 
-    public void OnClick()
-    {
-        GameManager.Instance().GetLevelSelectorManager().ShowPages(_categoryIndex, _packIndex, _color);
+        private LevelPack _levelPack;
+        private int _levelsSolved;
+        private Color _color;
+
+        public void SetInformation(LevelPack pack, int categoryIndex, int packIndex)
+        {
+            _levelPack = pack;
+            _packName.text = pack.packName;
+            int levelsNum = (pack.levels.ToString().Split('\n')).Length - 1;
+            _levels.text = _levelsSolved + "/" + levelsNum;
+            _categoryIndex = categoryIndex;
+            _packIndex = packIndex;
+        }
+
+        public void SetColor(Color color)
+        {
+            _packName.color = color;
+            _color = color;
+        }
+
+        public void OnClick()
+        {
+            GameManager.Instance().GetLevelSelectorManager().ShowPages(_categoryIndex, _packIndex, _color);
+        }
     }
 }

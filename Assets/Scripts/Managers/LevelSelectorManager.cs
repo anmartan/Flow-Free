@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,11 +13,16 @@ namespace FlowFree
         [SerializeField] private VerticalLayoutGroup _verticalLayoutConfiguration;
         [SerializeField] private HorizontalLayoutGroup _horizontalLayoutConfiguration;
 
+        [SerializeField] private GameObject _mainMenu;
+        [SerializeField] private GameObject _header;
+        
         private float _initialLayoutWidth;
         private bool _showingLevels;
         private void Start()
         {
             _showingLevels = false;
+            
+            // Creates the categories and hides them until the player hits the play button
             Category[] categories = GameManager.Instance().GetAvailableCategories();
 
             int offsetY = _verticalLayoutConfiguration.padding.vertical;
@@ -34,6 +36,9 @@ namespace FlowFree
 
 
             _initialLayoutWidth = _UIPagesParent.rect.width;
+
+
+            ShowMainMenu();
         }
 
         public void ShowCategories()
@@ -81,7 +86,21 @@ namespace FlowFree
         public void GoBack()
         {
             if(_showingLevels) ShowCategories();
-            else GameManager.Instance().ToMenu();
+            else ShowMainMenu();
+        }
+
+        public void Play()
+        {
+            _mainMenu.SetActive(false);
+            _header.SetActive(true);
+            _UICategoriesParent.gameObject.SetActive(true);
+        }
+
+        private void ShowMainMenu()
+        {
+            _UICategoriesParent.gameObject.SetActive(false);
+            _header.SetActive(false);
+            _mainMenu.SetActive(true);
         }
     }
 }

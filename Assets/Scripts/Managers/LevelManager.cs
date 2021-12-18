@@ -5,43 +5,59 @@ namespace FlowFree
 {
     public class LevelManager : MonoBehaviour
     {
-        [SerializeField] private Camera _sceneCamera;
-        [SerializeField] private BoardManager _boardManager;
-        
-        [SerializeField] private Button _backToMenuButton;
-        
-        [SerializeField] private Button _undoMovementButton;
-        [SerializeField] private Button _previousLevelButton;
-        [SerializeField] private Button _nextLevelButton;
-        [SerializeField] private Button _hintsButton;
-        [SerializeField] private Text _hintsText;
+        [Tooltip("Camera in the scene.")]
+        [SerializeField] private Camera _sceneCamera;           // Camera in the scene.
 
-        [SerializeField] private Text _levelText;
-        [SerializeField] private Text _sizeText;
-        [SerializeField] private Text _flowsText;
-        [SerializeField] private Text _stepsText;
-        [SerializeField] private Text _coverageText;
+        [Tooltip("Button the player will press to undo a movement.")]
+        [SerializeField] private Button _undoMovementButton;    // Button the player will press to undo a movement.
         
-        private int _playerMovements;                       // The number of movements the player has used to solve the level. It changes in two situations:
-                                                            // When the player touches a flow (or a circle), different from the last one they touched (playerMovements++).
-                                                            // When the player undoes the last movement (playerMovements--).
+        [Tooltip("Button the player will press to go to the previous level.")]
+        [SerializeField] private Button _previousLevelButton;   // Button the player will press to go to the previous level.
+        
+        [Tooltip("Button the player will press to go to the next level.")]
+        [SerializeField] private Button _nextLevelButton;       // Button the player will press to go to the next level.
+        
+        [Tooltip("Button the player will press to get a hint on the board.")]
+        [SerializeField] private Button _hintsButton;           // Button the player will press to get a hint on the board.
+        
+        [Tooltip("Text that shows the amount of hints the player can use.")]
+        [SerializeField] private Text _hintsText;               // Text that shows the amount of hints the player can use.
 
-        private bool _hasNextLevel;
-        private bool _hasPreviousLevel;
+        [Tooltip("Text that shows the number of the level the player is playing.")]
+        [SerializeField] private Text _levelText;               // Text that shows the number of the level the player is playing.
         
-        private Map _currentMap;
+        [Tooltip("Text that shows the size of the level the player is playing.")]
+        [SerializeField] private Text _sizeText;                // Text that shows the size of the level the player is playing.
+        
+        [Tooltip("Text that shows the amount of flows the level has.")]
+        [SerializeField] private Text _flowsText;               // Text that shows the amount of flows the level has.
+        
+        [Tooltip("Text that shows the amount of steps the player has given already.")]
+        [SerializeField] private Text _stepsText;               // Text that shows the amount of steps the player has given already.
+        
+        [Tooltip("Text that shows the percentage of the board that is covered by flows.")]
+        [SerializeField] private Text _coverageText;            // Text used to show the percentage of the flows that are covered.
+        
+
+        private int _playerMovements;                           // The number of movements the player has used to solve the level. It changes in two situations:
+                                                                // When the player touches a flow (or a circle), different from the last one they touched (playerMovements++).
+                                                                // When the player undoes the last movement (playerMovements--).
+        
+        private BoardManager _boardManager;                     // Instance of the boardManager, so that it is not necessary to call the Game Manager in every Update.
+        private Map _currentMap;                                // Map that is currently being played.
+        private LevelData _currentLevel;                        // Information about the level that is being currently played.
 
         public void CreateLevel(LevelData data)
         {
             _currentMap = new Map();
 
-            if (_currentMap.loadMap(data.level))
+            if (_currentMap.loadMap(data.Data))
             {
                 _playerMovements = 0;
-                
+                _boardManager = GameManager.Instance().GetBoardManager();
                 _boardManager.CreateBoard(_currentMap);
-                _levelText.text = "Level " + (data.levelNumber + 1);
-                _levelText.color = data.color;
+                _levelText.text = "Level " + (data.LevelNumber + 1);
+                _levelText.color = data.Color;
 
                 _sizeText.text = _currentMap.getWidth() + "x" + _currentMap.getHeight();
                 UpdateFlowsText(0);

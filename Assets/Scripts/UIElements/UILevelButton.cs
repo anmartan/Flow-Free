@@ -1,30 +1,30 @@
-using System.Collections;
-using System.Collections.Generic;
-using FlowFree;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UILevelButton : MonoBehaviour
+namespace FlowFree
 {
-    [SerializeField] private Text _buttonText;
-    
-    private int _levelCategory;
-    private int _levelPack;
-    private int _levelInPage;
-    
-    public void OnClick()
+    public class UILevelButton : MonoBehaviour
     {
-        GameManager.Instance().levelCat = _levelCategory;
-        GameManager.Instance().levelPack = _levelPack;
-        GameManager.Instance().levelNum = _levelInPage;
-        GameManager.Instance().ToLevelScene();
-    }
+        [SerializeField] private Text _buttonText;
 
-    public void SetInformation(int category, int pack, int level)
-    {
-        _levelCategory = category;
-        _levelPack = pack;
-        _levelInPage = level;
-        _buttonText.text = (_levelInPage + 1).ToString();
+        private int _levelCategory;
+        private int _levelPack;
+        private int _levelInPage;
+
+        public void OnClick()
+        {
+            GameManager.Instance().levelCat = _levelCategory;
+            GameManager.Instance().levelPack = _levelPack;
+            GameManager.Instance().levelNum = _levelInPage;
+            GameManager.Instance().ToLevelScene();
+        }
+
+        public void SetInformation(int category, int pack, int level)
+        {
+            _levelCategory = category;
+            _levelPack = pack;
+            _levelInPage = level;
+            _buttonText.text = (_levelInPage + 1).ToString();
+        }
     }
 }
