@@ -4,7 +4,7 @@ using FlowFree;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class LevelButton : MonoBehaviour
+public class UILevelButton : MonoBehaviour
 {
     [SerializeField] private Text _buttonText;
     
@@ -25,6 +25,6 @@ public class LevelButton : MonoBehaviour
         _levelCategory = category;
         _levelPack = pack;
         _levelInPage = level;
-        _buttonText.text = (level + 1).ToString();
+        _buttonText.text = (_levelInPage + 1).ToString();
     }
 }

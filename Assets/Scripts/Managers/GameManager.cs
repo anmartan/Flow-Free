@@ -13,7 +13,7 @@ namespace FlowFree
         [SerializeField] private BoardManager _boardManager;
         [SerializeField] private LevelSelectorManager _levelSelectorManager;
         [SerializeField] private Category[] _levelCategories; // [TODO] llevar a un config.cs?
-        [SerializeField] private Theme[] _themes;                // algo que se encargue de estas cosas
+        [SerializeField] private Theme _theme;
 
         [SerializeField] private Interstitial_Ad _interstitialAd;
         [SerializeField] private Rewarded_Ad _rewardedAd;
@@ -60,11 +60,20 @@ namespace FlowFree
             createLevel();
         }
 
+        public void ToMenu()
+        {
+            SceneManager.LoadScene("Menu");
+        }
         public void ToLevelScene()
         {
             SceneManager.LoadScene("Level");
         }
 
+        public void ToLevelSelectionScene()
+        {
+            SceneManager.LoadScene("LevelSelection");
+        }
+        
         public void PreviousLevel()
         {
             levelNum--;
@@ -85,7 +94,7 @@ namespace FlowFree
         // [TODO] getter pero bien
         public Theme getActualTheme()
         {
-            return _themes[0];
+            return _theme;
         }
 
         public LevelSelectorManager GetLevelSelectorManager() { return _levelSelectorManager; }

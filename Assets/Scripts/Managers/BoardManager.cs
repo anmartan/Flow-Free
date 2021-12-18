@@ -7,39 +7,38 @@ namespace FlowFree
     public class BoardManager : MonoBehaviour
     {
         [Tooltip("Camera in the scene, used to scale the tiles of the grid.")]
-        [SerializeField] private Camera _sceneCamera;        // Camera of the scene. Used for scaling the grid.
+        [SerializeField] private Camera _sceneCamera;           // Camera of the scene. Used for scaling the grid.
 
         [Tooltip("Tile prefab. The grid will be filled with these.")]
-        [SerializeField] private Tile _tilePrefab;           // Prefab of the tile that will be instantiated for creating the grid.
+        [SerializeField] private Tile _tilePrefab;              // Prefab of the tile that will be instantiated for creating the grid.
 
         [Tooltip("Margin at the top of the screen, used for the HUD, in pixels.")]
-        [SerializeField] private GameObject _topMargin;      // Margins left at both the top and bottom of the screen, for the HUD.
+        [SerializeField] private GameObject _topMargin;         // Margins left at both the top and bottom of the screen, for the HUD.
 
         [Tooltip("Margin at the bottom of the screen screen left unused by the board, in pixels.")]
-        [SerializeField] private GameObject _bottomMargin;   // Margins left at both sides of the screen, so that the board doesn't occupy the whole screen.
+        [SerializeField] private GameObject _bottomMargin;      // Margins left at both sides of the screen, so that the board doesn't occupy the whole screen.
 
-        [SerializeField] private LevelManager _levelManager;
+        [Tooltip("Instance of the Level Manager, so that it is not necessary to call the Game Manager in order to access it.")]
+        [SerializeField] private LevelManager _levelManager;    // Level manager instance, so that it is not necessary to call the GameManager constantly.
         
-        private int _width, _height;                        // Width and height of the board (in tiles).
+        private int _width, _height;                            // Width and height of the board (in tiles).
 
-        private Tile[,] _tiles;                             // Tiles array so that they can be accessed later on.
+        private Tile[,] _tiles;                                 // Tiles array so that they can be accessed later on.
 
-        private List<Vector2Int>[] _solution;               // Solution to the puzzle. Containts a number of lists with the positions of the tiles in each flow.
+        private List<Vector2Int>[] _solution;                   // Solution to the puzzle. Containts a number of lists with the positions of the tiles in each flow.
         private bool[] _hintsGiven;
 
-        private bool _touching;                             // Whether the player is currently touching the board or not.        
-        private bool _lastMoveChangedState;                 // Whether the last player changed the state of the aame or not.
-        private Vector2Int _lastTile;                       // The last tile the player interacted with (either by pressing, moving or releasing the screen).
+        private bool _touching;                                 // Whether the player is currently touching the board or not.        
+        private bool _lastMoveChangedState;                     // Whether the last player changed the state of the aame or not.
+        private Vector2Int _lastTile;                           // The last tile the player interacted with (either by pressing, moving or releasing the screen).
 
-        private int _currentColor;                          // The color index of the flow the player is currently touching.
-        private int _intermediateColor;                     // The color index of the flow the player changed in the intermediate state.
-        private int _lastColor;                             // The color index of the flow the player changed in the last state.
+        private int _currentColor;                              // The color index of the flow the player is currently touching.
+        private int _intermediateColor;                         // The color index of the flow the player changed in the intermediate state.
+        private int _lastColor;                                 // The color index of the flow the player changed in the last state.
 
-        private List<Vector2Int>[] _currentState;           // The state of the board the player is currently changing.
-        private List<Vector2Int>[] _intermediateState;      // The state of the board the player will go back to if they hit the undo button.
-        private List<Vector2Int>[] _lastState;              // The state of the board that is permanent (a.k.a. the player changed many moves ago).
-
-        private bool _stateChanged;
+        private List<Vector2Int>[] _currentState;               // The state of the board the player is currently changing.
+        private List<Vector2Int>[] _intermediateState;          // The state of the board the player will go back to if they hit the undo button.
+        private List<Vector2Int>[] _lastState;                  // The state of the board that is permanent (a.k.a. the player changed many moves ago).
 
         /// <summary>
         /// Creates a board the player can interact with. Creates the tiles and sets the initial circles, with the corresponding colors.
@@ -134,42 +133,38 @@ namespace FlowFree
             _sceneCamera.orthographicSize = size * 2;
             */
         }
-
-        public bool InsideBoundaries(Vector3 position)
-        {
-            return (position.x > transform.position.x && position.x < transform.position.x + _width &&      // x axis
-                    position.y < transform.position.y && position.y > transform.position.y - _height);      // y axis
-        }
-
+        
+        /// <summary>
+        /// What happens when the user starts touching the board: a new flow is to be drawn.
+        /// </summary>
+        /// <param name="touch">The position of the touch.</param>
         public void OnTouchStarted(Vector3 touch)
         {
             StartFlow(GetTileCoordinates(touch));
             _touching = true;
         }
 
+        /// <summary>
+        /// What happens when the player moves the finger through the board: if possible, the flow continues in the direction of the movement.
+        /// </summary>
+        /// <param name="touch">Current position of the touch.</param>
         public void OnTouchMoved(Vector3 touch)
         {
-            // If the touch is moving, take this into consideration:
-            // If it is not a valid movement (for any reason), nothing happens.
-            // If the flow cuts a part of itself, the flow has to be correctly dissolved.
-            // If the flow cuts another flow, it has to be correctly dissolved.
-            // The previous state cannot be destroyed, in case the player wants to undo their last movement.
-            
+            // If the touch started outside the board, nothing happens.
             if(!_touching) return;
             
-            // Calculates which tile the touch corresponds to.
+            // Calculates which tile the touch corresponds to, and moves the flow.
             ContinueFlow(GetTileCoordinates(touch));
-
         }
 
+        /// <summary>
+        /// What happens when the player stops touching the board: the state is saved, the number of movements updated, etc.
+        /// </summary>
         public void OnTouchFinished()
         {
+            // If the touch started outside the board, nothing happens
             if(!_touching) return;
-            _stateChanged = false;   // The state did not change.
    
-            // If the touch has finished (either because it was cancelled or becuase the player lifted their finger, take this into consideration:
-            // If there was any change in the flows, the number of movements has to increase.
-            
             // If the hint was previously given and the flow is recovered, the stars are painted
             if(_hintsGiven[_currentColor] && !StateChanged(_currentColor, _solution, _currentState)) SetStarsActive(_currentColor, true);
 
@@ -183,8 +178,126 @@ namespace FlowFree
             _currentColor = _lastColor;
             _touching = false;
         }
+        
+        /// <summary>
+        /// Undoes the last movement.
+        /// </summary>
+        public void UndoMovement()
+        {
+            foreach (List<Vector2Int> list in _currentState)
+            {
+                foreach (Vector2Int tile in list)
+                {
+                    // Clears the tile completely.
+                    _tiles[tile.y, tile.x].ResetState();
+                }
+            }
+            
+            // If the movement undone was a movement, it is also undone.
+            if (_currentColor != _lastColor) _levelManager.ChangeMovements(-1);
+            
+            // Restores the last state.
+            SaveState(_lastState, _currentState);
+            
+            // If the last move changed the state, the intermediate state is also restored.
+            if (_lastMoveChangedState) SaveState(_lastState, _intermediateState);
 
-        public bool GetStateChanged() { return _stateChanged; }
+            // Draws the current state, once restored, to recover the visual state.
+            for (int i = 0; i < _currentState.Length; i++) 
+            {
+                // If the state recovered is the same as the given with a clue, puts the stars back on.
+                if (_hintsGiven[i] && !StateChanged(i, _solution, _currentState)) SetStarsActive(i, true);
+                else SetStarsActive(i, false);
+                
+                // Draws every flow.
+                for (int j = 0; j < _currentState[i].Count; j++)
+                {
+                    Vector2Int pos = _currentState[i][j];
+                    Tile tile = _tiles[pos.y, pos.x];
+                    tile.SetColor(i);
+                    if (j < _currentState[i].Count - 1)
+                    {
+                        Vector2Int nextPos = _currentState[i][j + 1];
+                        Vector2Int dir = pos - nextPos;
+                        CrossFlow(pos, dir);
+                    }
+                }
+            }
+            _lastMoveChangedState = false;
+        }
+        
+        /// <summary>
+        /// Tries to give a hint to the player. If every hint has already been given, this method will do nothing.
+        /// </summary>
+        /// <returns>true if a clue was given; false if all of the hints have already been given.</returns>
+        public bool UseHint()
+        {
+            int _lastHintGiven = 0;
+
+            // Looks for a hint that has not been given.
+            // If it has not been given, but the player has already found the solution to a flow, that hint is ignored.
+            for (int i = 0; i < _solution.Length; i++)
+            {
+                if (!_hintsGiven[i] && StateChanged(i, _solution, _currentState)) break;
+
+                _lastHintGiven++;
+            }
+            
+            // If no possible hint was given, returns false.
+            if (_lastHintGiven >= _solution.Length) return false;
+            
+            // Activates the clue so that it is not given again.
+            _hintsGiven[_lastHintGiven] = true;
+            
+            // Draws the flow completely, undoing other flows if they are on the way.
+            StartFlow(_solution[_lastHintGiven][0]);
+            for (int j = 1; j < _solution[_lastHintGiven].Count; j++) ContinueFlow(_solution[_lastHintGiven][j]);
+
+            _lastMoveChangedState = true;
+            OnStateChanged();
+            
+            // Draws the stars.
+            SetStarsActive(_lastHintGiven, true);
+            return true;
+        }
+        
+        // - GETTERS -
+        /// <summary>
+        /// Checks whether the position given corresponds to the board or not. Used to filter input.
+        /// </summary>
+        /// <param name="position"> The position that is to be checked.</param>
+        /// <returns>true if the position given is inside the board boundaries; false if the position does not correspond to the board.</returns>
+        public bool InsideBoundaries(Vector3 position)
+        {
+            return (position.x > transform.position.x && position.x < transform.position.x + _width &&      // x axis
+                    position.y < transform.position.y && position.y > transform.position.y - _height);      // y axis
+        }
+
+        /// <summary>
+        /// Checks whether the level has finished: if every flow is the same as in the original solution, it has finished.
+        /// </summary>
+        /// <returns>true if the level has finished; false otherwise.</returns>
+        public bool LevelFinished()
+        {
+            // Checks that every tile is in the same flow as in the solution.
+            for(int i = 0; i < _solution.Length; i++)
+            {
+                for(int j = 0; j < _solution[i].Count; j++)
+                {
+                    Vector2Int tile = _solution[i][j];
+                    if (_tiles[tile.y, tile.x].GetColorIndex() != i || !_tiles[tile.y, tile.x].IsFullyConnected()) return false;
+                }
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Checks whether the state changed with the last movement.
+        /// </summary>
+        /// <returns>true if the state changed; false otherwise.</returns>
+        public bool GetStateChanged() { return _lastMoveChangedState; }
+        
+        // - PRIVATE - //
         private void OnStateChanged()
         {
             // If the state was changed in the last movement, it has to be saved before.
@@ -203,41 +316,6 @@ namespace FlowFree
 
             // If the change is considered a movement, the number of movements increases.
             if (IsMovement()) _levelManager.ChangeMovements(1);
-
-            _stateChanged = true;
-        }
-        public void UndoMovement()
-        {
-            foreach (var list in _currentState)
-            {
-                foreach (var tile in list)
-                {
-                    _tiles[tile.y, tile.x].ResetState();
-                }
-            }
-            if (_currentColor != _lastColor) _levelManager.ChangeMovements(-1);
-            SaveState(_lastState, _currentState);
-            if (_lastMoveChangedState) SaveState(_lastState, _intermediateState);
-
-            for (int i = 0; i < _currentState.Length; i++) 
-            {
-                SetStarsActive(i, false);
-                if(_hintsGiven[i] && !StateChanged(i, _solution, _currentState)) SetStarsActive(i, true);
-
-                for (int j = 0; j < _currentState[i].Count; j++)
-                {
-                    Vector2Int pos = _currentState[i][j];
-                    Tile tile = _tiles[pos.y, pos.x];
-                    tile.SetColor(i);
-                    if (j < _currentState[i].Count - 1)
-                    {
-                        Vector2Int nextPos = _currentState[i][j + 1];
-                        Vector2Int dir = pos - nextPos;
-                        CrossFlow(pos, dir);
-                    }
-                }
-            }
-            _lastMoveChangedState = false;
         }
 
         private void StartFlow(Vector2Int pos)
@@ -265,10 +343,19 @@ namespace FlowFree
             _lastTile = pos;
         }
 
+        /// <summary>
+        /// If the touch is moving, take this into consideration:
+        /// If it is not a valid movement (for any reason), nothing happens.
+        /// If the flow cuts a part of itself, the flow has to be correctly dissolved.
+        /// If the flow cuts another flow, it has to be correctly dissolved.
+        /// The previous state cannot be destroyed, in case the player wants to undo their last movement.
+        /// </summary>
+        /// <param name="pos">The tile to which the player moved.</param>
         private void ContinueFlow(Vector2Int pos)
         {
             Tile tile = _tiles[pos.y, pos.x];
             
+            // If the movement did not result in a tile change, nothing happens.
             if(pos == _lastTile) return;
             
             // If it is not a valid movement, there is nothing to do.
@@ -499,43 +586,7 @@ namespace FlowFree
             return true;
         }
 
-        public bool LevelFinished()
-        {
-            // Checks that every tile is in the same flow as in the solution.
-            for(int i = 0; i < _solution.Length; i++)
-            {
-                for(int j = 0; j < _solution[i].Count; j++)
-                {
-                    Vector2Int tile = _solution[i][j];
-                    if (_tiles[tile.y, tile.x].GetColorIndex() != i || !_tiles[tile.y, tile.x].IsFullyConnected()) return false;
-                }
-            }
-            return true;
-        }
-
-        public bool UseHint()
-        {
-            int _lastHintGiven = 0;
-
-            for (int i = 0; i < _solution.Length; i++)
-            {
-                if (!_hintsGiven[i] && StateChanged(i, _solution, _currentState)) break;
-
-                _lastHintGiven++;
-            }
-            
-            if (_lastHintGiven >= _solution.Length) return false;
-            _hintsGiven[_lastHintGiven] = true;
-            
-            StartFlow(_solution[_lastHintGiven][0]);
-            for (int j = 1; j < _solution[_lastHintGiven].Count; j++) ContinueFlow(_solution[_lastHintGiven][j]);
-
-            _lastMoveChangedState = true;
-            OnStateChanged();
-            SetStarsActive(_lastHintGiven, true);
-            return true;
-        }
-
+        
         private void SetStarsActive(int colorIndex, bool active)
         {
             Vector2Int starTile = _solution[colorIndex][0];

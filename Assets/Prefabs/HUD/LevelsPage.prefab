@@ -57,7 +57,7 @@ MonoBehaviour:
   m_ChildAlignment: 4
   m_StartCorner: 0
   m_StartAxis: 0
-  m_CellSize: {x: 100, y: 100}
+  m_CellSize: {x: 150, y: 150}
   m_Spacing: {x: 15, y: 15}
   m_Constraint: 1
   m_ConstraintCount: 5
@@ -74,3 +74,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _buttonPrefab: {fileID: 3870291886696738321, guid: 121f3f09bc002c14bbb50b0efc7904cc, type: 3}
+  _gridLayoutGroupConfiguration: {fileID: 5001481541778541970}

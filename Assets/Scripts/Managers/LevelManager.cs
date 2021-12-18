@@ -8,9 +8,7 @@ namespace FlowFree
         [SerializeField] private Camera _sceneCamera;
         [SerializeField] private BoardManager _boardManager;
         
-        [SerializeField] private Button _SettingsButton;
         [SerializeField] private Button _BackToMenuButton;
-        [SerializeField] private Button _AdsButton;
         
         [SerializeField] private Button _undoMovementButton;
         [SerializeField] private Button _previousLevelButton;
@@ -43,7 +41,7 @@ namespace FlowFree
                 _pipePercentage = 0;
                 
                 _boardManager.CreateBoard(_currentMap);
-                _levelText.text = "Level " + (_currentMap.getLevelInPage());
+                _levelText.text = "Level " + (data.levelNumber + 1);
                 _levelText.color = data.color;
 
                 _sizeText.text = _currentMap.getWidth() + "x" + _currentMap.getHeight();

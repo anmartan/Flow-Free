@@ -122,12 +122,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _levelManager: {fileID: 0}
   _boardManager: {fileID: 0}
+  _levelSelectorManager: {fileID: 0}
   _levelCategories:
   - {fileID: 11400000, guid: 45310c8c0687ca34686b8162a575b67a, type: 2}
   - {fileID: 11400000, guid: 9a82fdc0ca1d89f4aa9d3ef9444028eb, type: 2}
   - {fileID: 11400000, guid: 47bd307bab3074442836ad2f42bf5504, type: 2}
-  _themes:
-  - {fileID: 11400000, guid: 3328a067ff68cd440b94311b17be10e3, type: 2}
+  _theme: {fileID: 11400000, guid: ced1adac13588bd4faef33ae87ee487b, type: 2}
   _interstitialAd: {fileID: 847363739}
   _rewardedAd: {fileID: 847363741}
   _bannerAd: {fileID: 847363742}

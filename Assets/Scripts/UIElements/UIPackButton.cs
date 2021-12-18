@@ -4,7 +4,7 @@ using FlowFree;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class LevelPackButton : MonoBehaviour
+public class UIPackButton : MonoBehaviour
 {
     [SerializeField] private Text _packName;
     [SerializeField] private Text _levels;
