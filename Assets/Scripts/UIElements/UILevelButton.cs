@@ -6,6 +6,7 @@ namespace FlowFree
     public class UILevelButton : MonoBehaviour
     {
         [SerializeField] private Text _buttonText;
+        [SerializeField] private Image _tick;
 
         private int _levelCategory;
         private int _levelPack;
@@ -25,6 +26,16 @@ namespace FlowFree
             _levelPack = pack;
             _levelInPage = level;
             _buttonText.text = (_levelInPage + 1).ToString();
+        }
+
+        public void ShowStar()
+        {
+            
+        }
+
+        public void ShowTick()
+        {
+            _tick.enabled = true;
         }
     }
 }

@@ -140,6 +140,7 @@ namespace FlowFree
         private void FinishLevel()
         {
             GameManager.Instance().PlayIntersticialAd();
+            GameManager.Instance().FinishLevel(_playerMovements);
         }
 
         public void GetHintsByWatchingAds()

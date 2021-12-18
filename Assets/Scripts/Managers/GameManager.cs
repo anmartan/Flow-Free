@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Advertisements;
@@ -20,7 +21,7 @@ namespace FlowFree
         [SerializeField] private Interstitial_Ad _interstitialAd;
         [SerializeField] private Rewarded_Ad _rewardedAd;
         [SerializeField] private Banner_Ad _bannerAd;
-        
+
         private int _hints = 3;
         public int levelCat = 0;
         public int levelPack = 0;
@@ -53,18 +54,13 @@ namespace FlowFree
                 Destroy(this);
             }
 
-            if (_instance._boardManager) createLevel();
+            if (_instance._boardManager) CreateLevel();
         }
 
         public void NextLevel()
         {
             levelNum++;
-            createLevel();
-        }
-
-        public void ToMenu()
-        {
-            SceneManager.LoadScene("Menu");
+            CreateLevel();
         }
         public void ToLevelScene()
         {
@@ -79,14 +75,15 @@ namespace FlowFree
         public void PreviousLevel()
         {
             levelNum--;
-            createLevel();
+            CreateLevel();
         }
-        private void createLevel()
+        
+        private void CreateLevel()
         {
             TextAsset text = _levelCategories[levelCat].packs[levelPack].levels;
             string[] levels = text.ToString().Split('\n');
 
-            LevelData lel;
+            LevelData lel = new LevelData();
             lel.LevelNumber = levelNum;
             lel.PackNumber = levelPack;
             lel.CategoryNumber = levelCat;
@@ -96,13 +93,22 @@ namespace FlowFree
             lel.State = LevelState.UNSOLVED;
             if(_levelManager) _levelManager.CreateLevel(lel);
         }
-        
+
+        // TODO luego se quita?
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.S))
+            {
+                DataManager.Instance().Save();
+            }
+        }
+
         public Theme getActualTheme() { return _theme; }
 
         public LevelSelectorManager GetLevelSelectorManager() { return _levelSelectorManager; }
         public LevelManager GetLevelManager() { return _levelManager; }
         public BoardManager GetBoardManager() { return _boardManager; }
-        public Category[] GetAvailableCategories()
+        public Category[] GetCategories()
         {
             return _levelCategories;
         }
@@ -148,6 +154,16 @@ namespace FlowFree
             }
 
             return false;
+        }
+
+        public void FinishLevel(int steps)
+        {
+            DataManager.Instance().FinishLevel(_levelCategories[levelCat].categoryName, levelPack, levelNum, steps);
+        }
+
+        public void SetClues(int clues)
+        {
+            _hints = clues;
         }
     }
 }

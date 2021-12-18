@@ -13,7 +13,11 @@ namespace FlowFree
             for (int i = 0; i < 30; i++)
             {
                 UILevelButton button = Instantiate(_buttonPrefab, transform);
-                button.SetInformation(category, pack, page * 30 + i);
+                int levelNum = page * 30 + i;
+                int steps;
+                DataManager.Instance().LoadLevel(GameManager.Instance().GetCategories()[category].categoryName, pack, levelNum, out steps);
+                if(steps != -1) button.ShowTick();
+                button.SetInformation(category, pack, levelNum);
                 // TODO: Set _color
             }
         }

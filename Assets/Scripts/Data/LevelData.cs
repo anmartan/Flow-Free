@@ -16,7 +16,7 @@ namespace FlowFree
     /// <summary>
     /// Information about the levels (for saving and loading later on).
     /// </summary>
-    public struct LevelData
+    public class LevelData
     {
         public int LevelNumber;         // The number of the level inside a level pack (normally in the range [0, 149], but it could be more.
         public int PackNumber;          // The number of the pack inside a level category.

@@ -11,16 +11,13 @@ namespace FlowFree
         private int _categoryIndex;
         private int _packIndex;
 
-        private LevelPack _levelPack;
-        private int _levelsSolved;
         private Color _color;
 
         public void SetInformation(LevelPack pack, int categoryIndex, int packIndex)
         {
-            _levelPack = pack;
             _packName.text = pack.packName;
             int levelsNum = (pack.levels.ToString().Split('\n')).Length - 1;
-            _levels.text = _levelsSolved + "/" + levelsNum;
+            _levels.text = DataManager.Instance().GetPackCompletedLevels(GameManager.Instance().GetCategories()[categoryIndex].categoryName, packIndex) + "/" + levelsNum;
             _categoryIndex = categoryIndex;
             _packIndex = packIndex;
         }

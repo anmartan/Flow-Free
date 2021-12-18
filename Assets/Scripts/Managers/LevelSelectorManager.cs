@@ -23,7 +23,7 @@ namespace FlowFree
             _showingLevels = false;
             
             // Creates the categories and hides them until the player hits the play button
-            Category[] categories = GameManager.Instance().GetAvailableCategories();
+            Category[] categories = GameManager.Instance().GetCategories();
 
             int offsetY = _verticalLayoutConfiguration.padding.vertical;
             for (int i = 0; i < categories.Length; i++)
@@ -54,7 +54,7 @@ namespace FlowFree
         {
             for (int i = 0; i < _UIPagesParent.childCount; i++) Destroy(_UIPagesParent.GetChild(i).gameObject);
 
-            Category[] categories = GameManager.Instance().GetAvailableCategories();
+            Category[] categories = GameManager.Instance().GetCategories();
             
             // Checks that the info given is not incorrect (that should never happen).
             if (category >= categories.Length) return;
