@@ -1,15 +1,19 @@
 using UnityEngine;
 
-
-[CreateAssetMenu(menuName = "Flow/Level pack", order = 1)]
-public class LevelPack : ScriptableObject
+namespace FlowFree
 {
-	[Tooltip("Pack _levelNumber that will appear in the level selection menu.")]
-	public string packName;
+	[CreateAssetMenu(menuName = "Flow/Level pack", order = 1)]
+	public class LevelPack : ScriptableObject
+	{
+		[Tooltip("Pack name that will appear in the level selection menu.")]
+		public string packName; // Pack name that will appear in the level selection menu.
 
-	[Tooltip("File that contains the levels for this pack.")]
-	public TextAsset levels;
+		[Tooltip("File that contains the levels for this pack.")]
+		public TextAsset levels; // File that contains the levels for this pack.
 
-	// TODO
-	public bool blocked;
+		[Tooltip(
+			"Whether this pack is blocked, meaning, only the first level that has not been finished is available.")]
+		public bool
+			blocked; // Whether this pack is blocked, meaning, only the first level that has not been finished is available.
+	}
 }

@@ -41,17 +41,26 @@ namespace FlowFree
         [Tooltip("Panel that appears when the player finishes a level.")]
         [SerializeField] private GameObject _victoryPanel;      // Panel that appears when the player finishes a level.
 
-        [SerializeField] private Text _panelTitle;
+        [Tooltip("Text that will appear in the top part of the victory panel.")]
+        [SerializeField] private Text _panelTitle;              // Text that will appear in the top part of the victory panel.
 
-        [SerializeField] private Text _panelMovementsText;
+        [Tooltip("Text that will appear in the middle part of the victory panel.")]
+        [SerializeField] private Text _panelMovementsText;      // Text that will appear in the middle part of the victory panel.
 
-        [SerializeField] private Button _panelNextLevelButton;
-        [SerializeField] private Button _panelNextPackButton;
+        [Tooltip("Button in the victory panel that lets the player move to the next level.")]
+        [SerializeField] private Button _panelNextLevelButton;  // Button in the victory panel that lets the player move to the next level.
 
-        [SerializeField] private GameObject _perfectSolveIcon;
-        [SerializeField] private GameObject _solveIcon;
-        private bool _hasNextLevel;
-        private bool _hasPreviousLevel;
+        [Tooltip("Button in the victory panel that lets the player move to another pack.")]
+        [SerializeField] private Button _panelNextPackButton;   // Button in the victory panel that lets the player move to another pack.
+
+        [Tooltip("Icon that will appear in the upper part of the screen if the player has solved perfectly the level in the past.")]
+        [SerializeField] private GameObject _perfectSolveIcon;  // Icon that will appear in the upper part of the screen if the player has solved perfectly the level in the past.
+        
+        [Tooltip("Icon that will appear in the upper part of the screen if the player has solved perfectly the level in the past.")]
+        [SerializeField] private GameObject _solveIcon;         // Icon that will appear in the upper part of the screen if the player has solved the level in the past.
+        
+        private bool _hasNextLevel;                             // Whether the player can move to the next level or not.
+        private bool _hasPreviousLevel;                         // Whether there is a level before this one or not.
         
         private bool _levelFinished;                            // Whether the level has already finished or not. If it has, the player can no longer touch the board.
         private string _bestMovements;                          // The number of movements the player has used in their best solve ( "-" if the player has not solved this level before). 
@@ -61,38 +70,12 @@ namespace FlowFree
         
         private BoardManager _boardManager;                     // Instance of the boardManager, so that it is not necessary to call the Game Manager in every Update.
         private Map _currentMap;                                // Map that is currently being played.
-        private LevelData _currentLevelData;
+        private LevelData _currentLevelData;                    // LevelData with information about the level that is being played.
         
-        public void CreateLevel(LevelData data)
-        {
-            _currentLevelData = data;
-            _currentMap = new Map();
-
-            if (_currentMap.loadMap(data.Data))
-            {
-                _boardManager = GameManager.Instance().GetBoardManager();
-                RestartLevel();
-                
-                _levelText.text = "Level " + (data.LevelNumber + 1);
-                _levelText.color = data.Color;
-
-                _sizeText.text = _currentMap.GetWidth() + "x" + _currentMap.GetHeight();
-                if (_currentLevelData.BestSolve != -1)
-                {
-                    _bestMovements = _currentLevelData.BestSolve.ToString();
-                    if(_currentLevelData.BestSolve == _currentMap.GetFlowsNumber()) _perfectSolveIcon.SetActive(true);
-                    else _solveIcon.SetActive(true);
-                }
-                else _bestMovements = "-";
-                UpdateHintsButton();
-
-                _hasNextLevel = GameManager.Instance().IsThereANextLevel();
-                _hasPreviousLevel = GameManager.Instance().IsThereAPreviousLevel();
-                _previousLevelButton.interactable = _hasPreviousLevel;
-                _nextLevelButton.interactable = _hasNextLevel;
-            }
-            else Debug.LogError("Nivel incorrecto");
-        }
+        
+        /// <summary>
+        /// Reads the input and sends it to the board manager, if necessary.
+        /// </summary>
         private void Update()
         { 
             // If there is no input (or if it is supposed to be ignored), there is nothing to do.
@@ -105,23 +88,64 @@ namespace FlowFree
             // If the touch is not inside the grid boundaries, it is the same as if there was no touch.
             if (!_boardManager.InsideBoundaries(touchPosition)) return;
             
+            // Sends the touch to the board manager.
             if(touch.phase == TouchPhase.Began) _boardManager.OnTouchStarted(touchPosition);
             else if(touch.phase == TouchPhase.Moved) _boardManager.OnTouchMoved(touchPosition);
             else if (touch.phase == TouchPhase.Canceled || touch.phase == TouchPhase.Ended)
             {
                 _boardManager.OnTouchFinished();
-                if(_boardManager.GetStateChanged()) _undoMovementButton.interactable = true;
                 
+                // Checks whether there is any update needed in the level.
+                if(_boardManager.GetStateChanged()) _undoMovementButton.interactable = true;
                 if(_boardManager.LevelFinished()) FinishLevel();
             }
         }
         
-        public void UndoMovement()
+        /// <summary>
+        /// Creates the level. That includes not only the board, but every element in the UI.
+        /// </summary>
+        /// <param name="data"></param>
+        public void CreateLevel(LevelData data)
         {
-            _boardManager.UndoMovement();
-            _undoMovementButton.interactable = false;
-        }
+            _currentLevelData = data;
+            _currentMap = new Map();
 
+            // If the level can be loaded, it is played.
+            if (_currentMap.loadMap(data.Data))
+            {
+                _boardManager = GameManager.Instance().GetBoardManager();
+                RestartLevel();
+
+                // Sets the UI elements information.
+                _levelText.text = "Level " + (data.LevelNumber + 1);
+                _levelText.color = data.Color;
+
+                _sizeText.text = _currentMap.GetWidth() + "x" + _currentMap.GetHeight();
+                
+                // If there was a previous solve, activates the icons and changes the movements text.
+                if (_currentLevelData.BestSolve != -1)
+                {
+                    _bestMovements = _currentLevelData.BestSolve.ToString();
+                    if (_currentLevelData.BestSolve == _currentMap.GetFlowsNumber()) _perfectSolveIcon.SetActive(true);
+                    else _solveIcon.SetActive(true);
+                }
+                else _bestMovements = "-";
+
+                UpdateHintsButton();
+
+                // Checks which buttons shall remain interactable, and which shall not.
+                _hasNextLevel = GameManager.Instance().IsThereANextLevel();
+                _hasPreviousLevel = GameManager.Instance().IsThereAPreviousLevel();
+                _previousLevelButton.interactable = _hasPreviousLevel;
+                _nextLevelButton.interactable = _hasNextLevel;
+            }
+            else
+                Debug.LogError($"Incorrect Level: Category {data.CategoryNumber}, Pack {data.PackNumber}, Level {data.LevelNumber}. ");
+        }
+        
+        /// <summary>
+        /// Resets the information used for this level.
+        /// </summary>
         public void RestartLevel()
         {
             // Updates the information.
@@ -130,42 +154,79 @@ namespace FlowFree
             UpdatePipePercentage(0);
             UpdateHintsButton();
             SetPanelActive(false);
+            
+            // Creates the board again.
             _boardManager.CreateBoard(_currentMap);
             
             _levelFinished = false;
             _perfectSolveIcon.SetActive(false);
             _solveIcon.SetActive(false);
         }
+        
+        /// <summary>
+        /// Undoes the last movement.
+        /// </summary>
+        public void UndoMovement()
+        {
+            _boardManager.UndoMovement();
+            _undoMovementButton.interactable = false;
+        }
 
+        /// <summary>
+        /// Goes to the previous level.
+        /// </summary>
         public void PreviousLevel()
         {
             GameManager.Instance().PreviousLevel();
         }
+        
+        /// <summary>
+        /// Goes to the next level.
+        /// </summary>
         public void NextLevel()
         {
             GameManager.Instance().NextLevel();
         }
 
+        /// <summary>
+        /// Resets the steps text.
+        /// </summary>
         public void ResetMovements()
         {
             UpdateMovements(-_playerMovements);
         }
+        
+        /// <summary>
+        /// Updates the number of movements, and the UI text.
+        /// </summary>
+        /// <param name="addition">The amount of steps to be added to the current ones.</param>
         public void UpdateMovements(int addition)
         {
             _playerMovements += addition;
             _stepsText.text = "Steps: " + _playerMovements + " | Best: " + _bestMovements;
         }
 
+        /// <summary>
+        /// Updates the percentage of tiles that are occupied.
+        /// </summary>
+        /// <param name="newPercentage"></param>
         public void UpdatePipePercentage(int newPercentage)
         {
             _coverageText.text = "Pipe: " + newPercentage + "%";
         }
 
+        /// <summary>
+        /// Updates the number of flows that are complete.
+        /// </summary>
+        /// <param name="flowsCompleted"> Amount of flows that are complete.</param>
         public void UpdateFlowsText(int flowsCompleted)
         {
             _flowsText.text = "Flows: " + flowsCompleted + " / " + _currentMap.GetFlowsNumber();
         }
         
+        /// <summary>
+        /// Gives the player a hint, if possible.
+        /// </summary>
         public void GiveHint()
         {
             // Uses the hint if it is possible.
@@ -177,19 +238,11 @@ namespace FlowFree
             
             if(_boardManager.LevelFinished()) FinishLevel();
         }
-
-        private void FinishLevel()
-        {
-            _levelFinished = true;
-            _undoMovementButton.interactable = false;
-            _hintsButton.interactable = false;
-            
-            GameManager.Instance().PlayIntersticialAd();
-            GameManager.Instance().FinishLevel(_playerMovements, _currentMap.GetFlowsNumber());
-            
-            SetPanelActive(true);
-        }
-
+        
+        // TODO: make this work.
+        /// <summary>
+        /// Lets the player watch an ad, and gives them a hint as a result.
+        /// </summary>
         public void GetHintsByWatchingAds()
         {
             if(_levelFinished) return;
@@ -201,18 +254,30 @@ namespace FlowFree
             else Debug.Log("NO PISTA");
         }
 
+        /// <summary>
+        /// Goes to the menu scene.
+        /// </summary>
         public void GoBack()
         {
-            GameManager.Instance().ToLevelSelectionScene();
+            GameManager.Instance().ToMenuScene();
         }
+        
+        // ----- PRIVATE METHODS ----- //
+        
+        /// <summary>
+        /// Updates the hints button.
+        /// </summary>
         private void UpdateHintsButton()
         {
             int hints = GameManager.Instance().GetHints();
             _hintsText.text = hints + " x ";
             _hintsButton.interactable = hints > 0;
         }
-
-
+        
+        /// <summary>
+        /// Makes the victory appear (or disappear), and updates its information.
+        /// </summary>
+        /// <param name="active">Whether the panel is going to be active from this moment on or not.</param>
         public void SetPanelActive(bool active)
         {
             _victoryPanel.SetActive(active);
@@ -224,9 +289,28 @@ namespace FlowFree
             else title = "Congratulations";
             _panelTitle.text = title;
 
+            // Changes the text and activates a button, depending on the possible actions.
             _panelMovementsText.text = "You have completed the level in " + _playerMovements + " movements.";
             _panelNextLevelButton.gameObject.SetActive(_hasNextLevel);
             _panelNextPackButton.gameObject.SetActive(!_hasNextLevel);
+        }
+        
+        /// <summary>
+        /// Finishes the level.
+        /// </summary>
+        private void FinishLevel()
+        {
+            // Changes these values so that the player cannot change the board.
+            _levelFinished = true;
+            _undoMovementButton.interactable = false;
+            _hintsButton.interactable = false;
+            
+            // Shows an interstitial ad and saves the level.
+            GameManager.Instance().PlayIntersticialAd();
+            GameManager.Instance().FinishLevel(_playerMovements, _currentMap.GetFlowsNumber());
+            
+            // Activates the panel.
+            SetPanelActive(true);
         }
     }
 }
