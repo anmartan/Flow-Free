@@ -246,14 +246,19 @@ namespace FlowFree
         public void GetHintsByWatchingAds()
         {
             if(_levelFinished) return;
-            
-            if (GameManager.Instance().PlayRewardedAd())
-            {
-                Debug.Log("PISTA");
-            }
-            else Debug.Log("NO PISTA");
+            GameManager.Instance().PlayRewardedAd();
         }
 
+        /// <summary>
+        /// Updates the hints button.
+        /// </summary>
+        public void UpdateHintsButton()
+        {
+            int hints = GameManager.Instance().GetHints();
+            _hintsText.text = hints + " x ";
+            _hintsButton.interactable = hints > 0;
+        }
+        
         /// <summary>
         /// Goes to the menu scene.
         /// </summary>
@@ -263,16 +268,6 @@ namespace FlowFree
         }
         
         // ----- PRIVATE METHODS ----- //
-        
-        /// <summary>
-        /// Updates the hints button.
-        /// </summary>
-        private void UpdateHintsButton()
-        {
-            int hints = GameManager.Instance().GetHints();
-            _hintsText.text = hints + " x ";
-            _hintsButton.interactable = hints > 0;
-        }
         
         /// <summary>
         /// Makes the victory appear (or disappear), and updates its information.

@@ -27,8 +27,8 @@ namespace FlowFree
         [SerializeField] private Rewarded_Ad _rewardedAd;
         [SerializeField] private Banner_Ad _bannerAd;
 
-        private int _hints = 3;
-        private LevelData _currentLevelData;
+        private int _hints = 3;                                                 // The number of hints the player has.
+        private LevelData _currentLevelData;                                    // LevelData of the current level.
 
         private static GameManager _instance;
         
@@ -111,6 +111,15 @@ namespace FlowFree
         }
         
         /// <summary>
+        /// Adds a hint.
+        /// </summary>
+        public void AddHint()
+        {
+            _hints++;
+            if(_levelManager) _levelManager.UpdateHintsButton();
+        }
+        
+        /// <summary>
         /// Saves the level.
         /// </summary>
         /// <param name="steps">Steps the player needed to finish the level.</param>
@@ -120,42 +129,22 @@ namespace FlowFree
             DataManager.Instance().FinishLevel(_currentLevelData, steps, minimumSteps);
         }
         
-        // TODO :ADS
-        public bool PlayIntersticialAd()
+        /// <summary>
+        /// Shows an interstitial ad.
+        /// </summary>
+        public void PlayIntersticialAd()
         {
-            if (Advertisement.IsReady())
-            {
-                _interstitialAd.LoadAd();
-                _interstitialAd.ShowAd();
-                return true;
-            }
-
-            return false;
+            _interstitialAd.ShowAd();
         }
 
-        public bool PlayRewardedAd()
+        /// <summary>
+        /// Shows a rewarded ad.
+        /// </summary>
+        public void PlayRewardedAd()
         {
-            if (Advertisement.IsReady())
-            {
-                _rewardedAd.ShowAd();
-                return true;
-            }
-
-            return false;
-        }
-        
-        public bool PutBannerAdd()
-        {
-            if (Advertisement.IsReady())
-            {
-                _bannerAd.ShowBannerAd();
-                return true;
-            }
-
-            return false;
+            _rewardedAd.ShowAd();
         }
 
-        
         // ----- GETTERS ----- //
 
         public Theme GetActualTheme() { return _theme; }

@@ -41,6 +41,9 @@ namespace FlowFree
         
         [Tooltip("Text used for visualizing the category name (when showing the pages).")]
         [SerializeField] private Text _categoryNameText;                                // Text used for visualizing the category name (when showing the pages).
+
+        [Tooltip("Button to go back in the scene.")] 
+        [SerializeField] private GameObject _backButton;                                // Button to go back in the scene.
         
         private float _initialLayoutWidth;                                              // The initial width of the horizontalLayoutGroup.
         private ShowState _showState;                                                   // State that indicates what the game should show.
@@ -86,6 +89,7 @@ namespace FlowFree
             _UICategoriesParent.gameObject.SetActive(false);
             _UIPagesParent.gameObject.SetActive(false);
             _categoryNameText.gameObject.SetActive(false);
+            _backButton.SetActive(false);
 
             _showState = ShowState.MENU;
         }
@@ -101,6 +105,7 @@ namespace FlowFree
             _UICategoriesParent.gameObject.SetActive(true);
             _UIPagesParent.gameObject.SetActive(false);
             _categoryNameText.gameObject.SetActive(false);
+            _backButton.SetActive(true);
             
             _showState = ShowState.CATEGORIES;
         }
@@ -146,6 +151,8 @@ namespace FlowFree
             _UICategoriesParent.gameObject.SetActive(false);
             _UIPagesParent.gameObject.SetActive(true);
             _categoryNameText.gameObject.SetActive(true);
+            _backButton.SetActive(true);
+            
             _categoryNameText.text = categories[category].packs[pack].packName;
             _categoryNameText.color = color;
 
