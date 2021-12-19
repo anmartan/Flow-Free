@@ -18,7 +18,6 @@ namespace FlowFree
         
         private static DataManager _instance;
 
-        // TODO que reciba un levelData? Idunno this may work
         public void FinishLevel(LevelData levelData, int steps, int minimumSteps)
         {
             string key = GetKey(GameManager.Instance().GetCategoryName(levelData.CategoryNumber), levelData.PackNumber, levelData.LevelNumber);
@@ -39,7 +38,7 @@ namespace FlowFree
             }
         }
         
-        // cat - pack - levNum: valor
+        // cat - pack - levNum: pasos|perfecto?
         // clues: valor
         private void Awake()
         {

@@ -61,7 +61,7 @@ namespace FlowFree
 
         public void ToLevelSelectionScene()
         {
-            SceneManager.LoadScene("LevelSelection");
+            SceneManager.LoadScene("Menu");
         }
         
         
@@ -83,7 +83,7 @@ namespace FlowFree
             }
         }
 
-        public bool isThereANextLevel()
+        public bool IsThereANextLevel()
         {
             var levels = _levelCategories[_currentLevelData.CategoryNumber].packs[_currentLevelData.PackNumber].levels.ToString().Split('\n');
             return _currentLevelData.LevelNumber + 1 < levels.Length - 1 && !NextLevelBlocked();
@@ -92,7 +92,7 @@ namespace FlowFree
         public void NextLevel()
         {
             
-            if(isThereANextLevel())
+            if(IsThereANextLevel())
             {
                 ChangeLevel(+1);
             }
@@ -101,23 +101,24 @@ namespace FlowFree
         private bool NextLevelBlocked()
         {
             bool blocked = _levelCategories[_currentLevelData.CategoryNumber].packs[_currentLevelData.PackNumber].blocked;
-            if (blocked)
-            {
-                DataManager.Instance().LoadLevel(GameManager.Instance().GetCategoryName(_currentLevelData.CategoryNumber), _currentLevelData.PackNumber, _currentLevelData.LevelNumber, out int steps, out bool perfect);
-                return steps == -1;
-            }
-            return blocked;
+            if (!blocked) return false;
+            
+            DataManager.Instance().LoadLevel(GameManager.Instance().GetCategoryName(_currentLevelData.CategoryNumber), _currentLevelData.PackNumber, _currentLevelData.LevelNumber, out int steps, out bool perfect);
+            return steps == -1;
         }
 
         private void ChangeLevel(int step)
         {
             var newLevelData = new LevelData();
-
             newLevelData.CategoryNumber = _currentLevelData.CategoryNumber;
             newLevelData.PackNumber = _currentLevelData.PackNumber;
             newLevelData.LevelNumber = _currentLevelData.LevelNumber+step;
-            newLevelData.BestSolve = 0;
-            newLevelData.State = LevelState.UNSOLVED; //TODO
+            
+            DataManager.Instance().LoadLevel(_levelCategories[newLevelData.CategoryNumber].name, newLevelData.PackNumber, newLevelData.LevelNumber, out int steps, out bool perfect);
+            
+            newLevelData.BestSolve = steps;
+            newLevelData.State = LevelState.UNSOLVED;
+            if (steps != -1) newLevelData.State = (perfect) ? LevelState.PERFECT : LevelState.SOLVED;
             newLevelData.Color = _levelCategories[newLevelData.CategoryNumber].color;
             newLevelData.Data = _levelCategories[newLevelData.CategoryNumber].packs[newLevelData.PackNumber].levels.ToString().Split('\n')[newLevelData.LevelNumber];
 
@@ -126,7 +127,7 @@ namespace FlowFree
         }
 
 
-        public Theme getActualTheme() { return _theme; }
+        public Theme GetActualTheme() { return _theme; }
 
         public LevelSelectorManager GetLevelSelectorManager() { return _levelSelectorManager; }
         public LevelManager GetLevelManager() { return _levelManager; }
@@ -184,7 +185,6 @@ namespace FlowFree
         public void FinishLevel(int steps, int minimumSteps)
         {
             DataManager.Instance().FinishLevel(_currentLevelData, steps, minimumSteps);
-            //DataManager.Instance().FinishLevel(_levelCategories[_currentLevelData.CategoryNumber].categoryName, _currentLevelData.PackNumber, _currentLevelData.LevelNumber, steps);
         }
 
         public void SetClues(int clues)

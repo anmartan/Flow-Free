@@ -8,7 +8,9 @@ namespace FlowFree
     {
         [SerializeField] private Button button;
         [SerializeField] private Text _buttonText;
-        [SerializeField] private Image _tick;
+        [SerializeField] private Image _solvedImage;
+        [SerializeField] private Image _perfectSolvedImage;
+        [SerializeField] private Image _blockedImage;
 
         private LevelData _levelData;
         
@@ -18,13 +20,14 @@ namespace FlowFree
             GameManager.Instance().ToLevelScene();
         }
 
-        public void SetInformation(int category, int pack, int level)
+        public void SetInformation(int category, int pack, int level, int steps, bool perfect)
         {
             _levelData.CategoryNumber = category;
             _levelData.PackNumber = pack;
             _levelData.LevelNumber = level;
-            _levelData.BestSolve = 0;
+            _levelData.BestSolve = steps;
             _levelData.State = LevelState.UNSOLVED;
+            if (steps != -1) _levelData.State = (perfect) ? LevelState.PERFECT : LevelState.SOLVED;
             _levelData.Color = GameManager.Instance().GetCategories()[category].color;
             _levelData.Data = GameManager.Instance().GetCategories()[category].packs[pack].levels.ToString().Split('\n')[level];
             
@@ -34,19 +37,17 @@ namespace FlowFree
         internal void SetActive(bool active)
         {
             button.interactable = active;
+            _blockedImage.enabled = !active;
         }
 
-        // TODO
         public void ShowStar()
         {
-            _tick.enabled = true;
-            _tick.color = Color.yellow;
-            
+            _perfectSolvedImage.enabled = true;
         }
 
         public void ShowTick()
         {
-            _tick.enabled = true;
+            _solvedImage.enabled = true;
         }
 
         internal void SetColor(Color color)

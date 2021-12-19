@@ -53,10 +53,6 @@ namespace FlowFree
         {
             _levelManager = GameManager.Instance().GetLevelManager();
             
-            // Updates the information of the LevelManager.
-            _levelManager.ResetMovements();
-            _levelManager.UpdateFlowsText(0);
-            _levelManager.UpdatePipePercentage(0);
             
             _width = map.getWidth();
             _height = map.getHeight();
@@ -65,6 +61,10 @@ namespace FlowFree
             List<Vector2Int> gaps = map.GetGaps();
 
             _usableTiles = _width * _height - gaps.Count;
+            _currentColor = -1;
+            _intermediateColor = -1;
+            _lastColor = -1;
+            _touching = false;
             
             // Creates the lists that will contain information about the board: the final solution, the current state and the previous state.
             _solution = new List<Vector2Int>[map.getFlowsNumber()];
@@ -73,7 +73,6 @@ namespace FlowFree
             _currentState = new List<Vector2Int>[map.getFlowsNumber()];
             _intermediateState = new List<Vector2Int>[map.getFlowsNumber()];
             _lastState = new List<Vector2Int>[map.getFlowsNumber()];
-            _lastColor = -1;
 
             for (int i = 0; i < map.getFlowsNumber(); i++)
             {
@@ -100,6 +99,7 @@ namespace FlowFree
                     // Creates a new tile, and assigns it to the tile in that position in the array.
                     // Instantiates it with a (0.5f, -0.5f) offset, so that the parent is in the top-left corner.
                     _tiles[i, j] = Instantiate(_tilePrefab, new Vector3(j + 0.5f, -i - 0.5f, 0), Quaternion.identity, transform);
+                    _tiles[i,j].SetBackgroundColor(GameManager.Instance().GetLevelData().Color);
                 }
             }
 

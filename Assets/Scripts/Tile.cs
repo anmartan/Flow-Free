@@ -50,6 +50,15 @@ namespace FlowFree
             _background.enabled = active;
             _gap = !active;                 // If the tile is active, it cannot be a gap, and vice versa.
         }
+
+        /// <summary>
+        /// Changes the background color (the grid).
+        /// </summary>
+        /// <param name="color">The color that the grid will have.</param>
+        public void SetBackgroundColor(Color color)
+        {
+            _background.color = color;
+        }
         
         /// <summary>
         /// Puts a circle in the tile, if there wasn't one previously.
@@ -74,10 +83,10 @@ namespace FlowFree
             _colorIndex = index;
             
             // If the index is not a valid one (-1, when the index is used to detect errors), no color is changed.
-            if (index < 0 || index >= GameManager.Instance().getActualTheme().colors.Length) return;
+            if (index < 0 || index >= GameManager.Instance().GetActualTheme().colors.Length) return;
 
             // Sets the color for all the elements.
-            _color = GameManager.Instance().getActualTheme().colors[index];
+            _color = GameManager.Instance().GetActualTheme().colors[index];
             _circle.color = _color;
             _entranceFlow.color = _color;
             _exitFlow.color = _color;

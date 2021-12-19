@@ -26,7 +26,7 @@ namespace FlowFree
                 DataManager.Instance().LoadLevel(GameManager.Instance().GetCategoryName(category), pack, levelNum, out steps, out bool perfect);
                 if (perfect) button.ShowStar(); 
                 else if(steps != -1) button.ShowTick();
-                button.SetInformation(category, pack, levelNum);
+                button.SetInformation(category, pack, levelNum, steps, perfect);
                 button.SetColor(color);
             }
         }
