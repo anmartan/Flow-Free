@@ -5,6 +5,13 @@ namespace FlowFree
 {
     public class LevelSelectorManager : MonoBehaviour
     {
+        public enum ShowState
+        {
+            MENU,
+            CATEGORIES,
+            PAGES
+        };
+        
         [SerializeField] private UICategory _categoryPrefab;
         [SerializeField] private UIPage _pagePrefab;
         [SerializeField] private RectTransform _UICategoriesParent;
@@ -15,13 +22,12 @@ namespace FlowFree
 
         [SerializeField] private GameObject _mainMenu;
         [SerializeField] private GameObject _header;
+        [SerializeField] private Text _categoryNameText;
         
         private float _initialLayoutWidth;
-        private bool _showingLevels;
+        private ShowState _showState;
         private void Start()
         {
-            _showingLevels = false;
-            
             // Creates the categories and hides them until the player hits the play button
             Category[] categories = GameManager.Instance().GetCategories();
 
@@ -36,16 +42,37 @@ namespace FlowFree
 
 
             _initialLayoutWidth = _UIPagesParent.rect.width;
-
-
-            ShowMainMenu();
+            
+            if(_showState == ShowState.MENU) ShowMainMenu();
+            else if (_showState == ShowState.CATEGORIES) ShowCategories();
+            else
+            {
+                LevelData data = GameManager.Instance().GetLevelData();
+                ShowPages(data.CategoryNumber, data.PackNumber, data.Color);
+            }
         }
 
+        private void ShowMainMenu()
+        {
+            _mainMenu.SetActive(true);
+            
+            _header.SetActive(false);
+            _UICategoriesParent.gameObject.SetActive(false);
+            _UIPagesParent.gameObject.SetActive(false);
+            _categoryNameText.gameObject.SetActive(false);
+
+            _showState = ShowState.MENU;
+        }
         public void ShowCategories()
         {
+            _mainMenu.SetActive(false);
+            
+            _header.SetActive(true);
             _UICategoriesParent.gameObject.SetActive(true);
             _UIPagesParent.gameObject.SetActive(false);
-            _showingLevels = false;
+            _categoryNameText.gameObject.SetActive(false);
+            
+            _showState = ShowState.CATEGORIES;
 
             _UIPagesParent.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _initialLayoutWidth);
         }
@@ -73,34 +100,32 @@ namespace FlowFree
             
             // Sets the size of the scroll, and sets its position to the origin, so that it is seen from the start.
             _UIPagesParent.offsetMin = new Vector2(_initialLayoutWidth -offsetX, 0);
-            _UIPagesParent.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
+            _UIPagesParent.SetPositionAndRotation(new Vector3(0,0 ,_UIPagesParent.transform.position.z), Quaternion.identity);
+
+            // Switches the visibility of the objects.
+            _mainMenu.SetActive(false);
             
-            // Switches the visibility of the two objects.
+            _header.SetActive(false);
             _UICategoriesParent.gameObject.SetActive(false);
             _UIPagesParent.gameObject.SetActive(true);
+            _categoryNameText.gameObject.SetActive(true);
+            _categoryNameText.text = categories[category].packs[pack].packName;
+            _categoryNameText.color = color;
 
-            _showingLevels = true;
+            _showState = ShowState.PAGES;
         }
 
 
         public void GoBack()
         {
-            if(_showingLevels) ShowCategories();
+            if(_showState == ShowState.PAGES) ShowCategories();
             else ShowMainMenu();
         }
 
-        public void Play()
+        public void ShowPages()
         {
-            _mainMenu.SetActive(false);
-            _header.SetActive(true);
-            _UICategoriesParent.gameObject.SetActive(true);
+            _showState = ShowState.PAGES;
         }
 
-        private void ShowMainMenu()
-        {
-            _UICategoriesParent.gameObject.SetActive(false);
-            _header.SetActive(false);
-            _mainMenu.SetActive(true);
-        }
     }
 }

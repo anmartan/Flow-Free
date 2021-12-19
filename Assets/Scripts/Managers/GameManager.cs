@@ -23,7 +23,6 @@ namespace FlowFree
         [SerializeField] private Banner_Ad _bannerAd;
 
         private int _hints = 3;
-
         private LevelData _currentLevelData;
 
         public static GameManager Instance()
@@ -47,7 +46,8 @@ namespace FlowFree
                 _instance._levelManager = _levelManager;
                 _instance._boardManager = _boardManager;
                 _instance._levelSelectorManager = _levelSelectorManager;
-
+                
+                if(_levelSelectorManager) _levelSelectorManager.ShowPages();
                 Destroy(this);
             }
 
@@ -162,7 +162,6 @@ namespace FlowFree
         {
             if (Advertisement.IsReady())
             {
-                _rewardedAd.LoadAd();
                 _rewardedAd.ShowAd();
                 return true;
             }
@@ -174,7 +173,6 @@ namespace FlowFree
         {
             if (Advertisement.IsReady())
             {
-                _bannerAd.LoadBanner();
                 _bannerAd.ShowBannerAd();
                 return true;
             }

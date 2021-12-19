@@ -48,6 +48,8 @@ namespace FlowFree
         [SerializeField] private Button _panelNextLevelButton;
         [SerializeField] private Button _panelNextPackButton;
 
+        [SerializeField] private GameObject _perfectSolveIcon;
+        [SerializeField] private GameObject _solveIcon;
         private bool _hasNextLevel;
         private bool _hasPreviousLevel;
         
@@ -75,7 +77,13 @@ namespace FlowFree
                 _levelText.color = data.Color;
 
                 _sizeText.text = _currentMap.getWidth() + "x" + _currentMap.getHeight();
-                _bestMovements = (_currentLevelData.BestSolve != -1) ? _currentLevelData.BestSolve.ToString() : "-";
+                if (_currentLevelData.BestSolve != -1)
+                {
+                    _bestMovements = _currentLevelData.BestSolve.ToString();
+                    if(_currentLevelData.BestSolve == _currentMap.getFlowsNumber()) _perfectSolveIcon.SetActive(true);
+                    else _solveIcon.SetActive(true);
+                }
+                else _bestMovements = "-";
                 UpdateHintsButton();
 
                 _hasNextLevel = GameManager.Instance().IsThereANextLevel();
@@ -125,6 +133,8 @@ namespace FlowFree
             _boardManager.CreateBoard(_currentMap);
             
             _levelFinished = false;
+            _perfectSolveIcon.SetActive(false);
+            _solveIcon.SetActive(false);
         }
 
         public void PreviousLevel()
@@ -217,12 +227,6 @@ namespace FlowFree
             _panelMovementsText.text = "You have completed the level in " + _playerMovements + " movements.";
             _panelNextLevelButton.gameObject.SetActive(_hasNextLevel);
             _panelNextPackButton.gameObject.SetActive(!_hasNextLevel);
-        }
-
-        public void ClosePanel()
-        {
-            Debug.Log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAA ");
-            SetPanelActive(false);
         }
     }
 }

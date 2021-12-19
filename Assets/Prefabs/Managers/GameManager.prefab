@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _androidAdUnitId: Interstitial_Android
-  _iOsAdUnitId: Interstitial_iOS
+  _iOSAdUnitId: Interstitial_iOS
 --- !u!114 &847363741
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -131,6 +131,3 @@ MonoBehaviour:
   _interstitialAd: {fileID: 847363739}
   _rewardedAd: {fileID: 847363741}
   _bannerAd: {fileID: 847363742}
-  levelCat: 2
-  levelPack: 2
-  levelNum: 1
