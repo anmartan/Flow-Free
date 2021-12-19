@@ -17,7 +17,7 @@ namespace FlowFree
         {
             _packName.text = pack.packName;
             int levelsNum = (pack.levels.ToString().Split('\n')).Length - 1;
-            _levels.text = DataManager.Instance().GetPackCompletedLevels(GameManager.Instance().GetCategories()[categoryIndex].categoryName, packIndex) + "/" + levelsNum;
+            _levels.text = DataManager.Instance().GetPackCompletedLevels(GameManager.Instance().GetCategoryName(categoryIndex), packIndex) + "/" + levelsNum;
             _categoryIndex = categoryIndex;
             _packIndex = packIndex;
         }

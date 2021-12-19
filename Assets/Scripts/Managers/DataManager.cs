@@ -12,14 +12,31 @@ namespace FlowFree
     public class DataManager : MonoBehaviour
     {
         private static string _path;
-        private Dictionary<string, int> _data;
+        private Dictionary<string, string> _data;
         private int clues;
+        private bool _loaded;
         
         private static DataManager _instance;
-        public void FinishLevel(string categoryName, int levelPack, int levelNum, int steps)
+
+        // TODO que reciba un levelData? Idunno this may work
+        public void FinishLevel(LevelData levelData, int steps, int minimumSteps)
         {
-            string key = GetKey(categoryName, levelPack, levelNum);
-            if (!_data.ContainsKey(key) || _data[key] > steps) _data[key] = steps;
+            string key = GetKey(GameManager.Instance().GetCategoryName(levelData.CategoryNumber), levelData.PackNumber, levelData.LevelNumber);
+            
+            int previousSteps = -1;
+            if(_data.ContainsKey(key))
+            {
+                string[] values = _data[key].Split('|');
+                previousSteps = int.Parse(values[0]);
+            }
+
+            if (previousSteps == -1 || previousSteps > steps)
+            {
+                string value = steps + "|";
+                value += (steps == minimumSteps) ? 1 : 0;
+                _data[key] = value;
+                Save(); 
+            }
         }
         
         // cat - pack - levNum: valor
@@ -28,6 +45,7 @@ namespace FlowFree
         {
             if (_instance == null)
             {
+                _loaded = false;
                 _instance = this;
                 _path = Application.persistentDataPath + "/save.txt";
                 Load();
@@ -42,7 +60,6 @@ namespace FlowFree
         }
         public void Save()
         {
-            Debug.Log("guardamos");
             string textData = "";
             foreach (var pair in _data)
             {
@@ -60,18 +77,19 @@ namespace FlowFree
 
         public void Load()
         {
-            
-            _data = new Dictionary<string, int>();
+            _data = new Dictionary<string, string>();
             if (File.Exists(_path))
             {
+                _loaded = true;
+                
                 string[] data = System.IO.File.ReadAllLines(_path);
-                if(CompareSha256(data)) Debug.Log("Todo bien");
-                else
+                if(!CompareSha256(data))
                 {
-                    Debug.LogError("Mas engañao");
+                    // If the hash is not the same (the player cheated), overwrites the whole file so that the progress get completely lost.
+                    System.IO.File.WriteAllLines(_path, new []{""});
                     return;
                 }
-                
+
                 foreach (var line in data)
                 {
                     var splits = line.Split(':');
@@ -81,7 +99,7 @@ namespace FlowFree
                     if (formattedKey.Length == 1) clues = int.Parse(splits[1]);
                     else if(formattedKey.Length == 3)
                     {
-                        _data[splits[0]] = int.Parse(splits[1]);
+                        _data[splits[0]] = splits[1];
                     }
                 }
             }
@@ -89,15 +107,32 @@ namespace FlowFree
 
         private void Start()
         {
-            GameManager.Instance().SetClues(clues);
+            // If the file was loaded (or deleted, if the player cheated), the number of hints is set.
+            if(_loaded) GameManager.Instance().SetClues(clues);
         }
 
-        public void LoadLevel(string categoryName, int levelPack, int levelNum, out int steps)
+        //With the given LevelData fills the number of steps and whether it was completed in the minimum number
+        //of steps or not. On uncompleted level steps will be -1
+        public void LoadLevel(string category, int pack, int level, out int steps, out bool minimum)
         {
-            string key = GetKey(categoryName, levelPack, levelNum);
-            if (_data.ContainsKey(key)) steps = _data[key];
-            else steps = -1;
+            string key = GetKey(category, pack, level);
+
+
+            //It is only contained when it's completed
+            if(_data.ContainsKey(key))
+            {
+                string[] value = _data[key].Split('|');
+                steps =  int.Parse(value[0]);
+                minimum = int.Parse(value[1]) == 1; //1 on perfect game 0 otherwise 
+            }
+            else 
+            {
+                minimum = false;
+                steps = -1; //We signal this way an uncompleted level
+            }
         }
+
+        //Composes the key for a level in the dictionary
         private string GetKey(string name, int pack, int level)
         {
             return $"{name}-{pack}-{level}";
@@ -141,7 +176,6 @@ namespace FlowFree
         {
             if(pauseStatus) Save();
         }
-
 
         public int GetPackCompletedLevels(string categoryName, int levelPack)
         {

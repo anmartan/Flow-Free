@@ -73,6 +73,7 @@ namespace FlowFree
             _currentState = new List<Vector2Int>[map.getFlowsNumber()];
             _intermediateState = new List<Vector2Int>[map.getFlowsNumber()];
             _lastState = new List<Vector2Int>[map.getFlowsNumber()];
+            _lastColor = -1;
 
             for (int i = 0; i < map.getFlowsNumber(); i++)
             {
@@ -412,10 +413,13 @@ namespace FlowFree
                 // If the flow is the same color, and it is not the missing circle, it is removed until this position.
                 if (previousColor == _currentColor && !tile.IsCircle() || pos == _currentState[_currentColor][0])
                 {
-                    DissolveFlow(previousColor, _currentState[previousColor][positionInList]);
+                    List<Vector2Int> dissolvedTiles = DissolveFlow(previousColor, _currentState[previousColor][positionInList]);
                         
                     // If there was a flow in this position, it is restored.
-                    RestoreFlow(_lastTile);
+                    for(int i= 0; i < dissolvedTiles.Count;i++)
+                    {
+                        RestoreFlow(dissolvedTiles[i]);
+                    }
                 }
                 // If it is another color, though, it has to be dissolved until the previous position, so that both flows do not share this tile.
                 else if (previousColor != _currentColor) DissolveFlow(previousColor, _currentState[previousColor][positionInList - 1]);
@@ -490,11 +494,14 @@ namespace FlowFree
         /// </summary>
         /// <param name="colorIndex">The index of the flow that will be dissolved.</param>
         /// <param name="lastIncluded">The position of the last tile that will be preserved. Everything from this point onwards will be dissolved. </param>
-        private void DissolveFlow(int colorIndex, Vector2Int lastIncluded)
+        /// <returns> A list with all the tiles that have been dissolved.</returns>
+        private List<Vector2Int> DissolveFlow(int colorIndex, Vector2Int lastIncluded)
         {
             // If it is not a valid _color, there is nothing to do.
-            if(colorIndex < 0 ) return;
-            
+            if(colorIndex < 0 ) return null;
+
+            List<Vector2Int> dissolvedTiles = new List<Vector2Int>();
+
             // Removes the stars from the tips of the flow, if there were any.
             SetStarsActive(colorIndex, false);
             
@@ -509,10 +516,13 @@ namespace FlowFree
             {
                 Vector2Int pos = flow[i];
                 Tile tile = _tiles[pos.y, pos.x];
+                dissolvedTiles.Add(pos);
 
                 tile.Dissolve(false);
             }
             flow.RemoveRange(positionInList + 1, flow.Count - (positionInList + 1));
+
+            return dissolvedTiles;
         }
 
         /// <summary>
@@ -538,8 +548,6 @@ namespace FlowFree
             int lastTile = _currentState[i].Count - 1;
             int currentTile = _intermediateState[i].IndexOf(tilePosition);
             
-            // TODO: fix when the player moves forward and then cuts themselves.
-            // TODO: The distance is bigger than 1, but it can be connected.
             if (currentTile - lastTile > 1) return;
             currentTile--;
 

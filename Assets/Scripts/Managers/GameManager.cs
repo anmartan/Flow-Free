@@ -23,9 +23,8 @@ namespace FlowFree
         [SerializeField] private Banner_Ad _bannerAd;
 
         private int _hints = 3;
-        public int levelCat = 0;
-        public int levelPack = 0;
-        public int levelNum = 0;
+
+        private LevelData _currentLevelData;
 
         public static GameManager Instance()
         {
@@ -41,10 +40,8 @@ namespace FlowFree
             }
             else
             {
-                // TODO: Erase
-                levelCat = _instance.levelCat;
-                levelPack = _instance.levelPack ;
-                levelNum = _instance.levelNum;
+                // Saves the level data that was given to the game manager before.
+                _currentLevelData = _instance._currentLevelData;
                 
                 // Assigns the level manager and board manager that will be used in the new scene.
                 _instance._levelManager = _levelManager;
@@ -57,11 +54,6 @@ namespace FlowFree
             if (_instance._boardManager) CreateLevel();
         }
 
-        public void NextLevel()
-        {
-            levelNum++;
-            CreateLevel();
-        }
         public void ToLevelScene()
         {
             SceneManager.LoadScene("Level");
@@ -72,47 +64,80 @@ namespace FlowFree
             SceneManager.LoadScene("LevelSelection");
         }
         
-        public void PreviousLevel()
-        {
-            levelNum--;
-            CreateLevel();
-        }
         
         private void CreateLevel()
         {
-            TextAsset text = _levelCategories[levelCat].packs[levelPack].levels;
-            string[] levels = text.ToString().Split('\n');
-
-            LevelData lel = new LevelData();
-            lel.LevelNumber = levelNum;
-            lel.PackNumber = levelPack;
-            lel.CategoryNumber = levelCat;
-            lel.Data = levels[levelNum];
-            lel.Color = _levelCategories[levelCat].color;
-            lel.BestSolve = 0;
-            lel.State = LevelState.UNSOLVED;
-            if(_levelManager) _levelManager.CreateLevel(lel);
+            if(_levelManager) _levelManager.CreateLevel(_currentLevelData);
         }
 
-        // TODO luego se quita?
-        private void Update()
+        public bool IsThereAPreviousLevel()
         {
-            if (Input.GetKeyDown(KeyCode.S))
+            return _currentLevelData.LevelNumber > 0;
+        }
+
+        public void PreviousLevel()
+        {
+            if(IsThereAPreviousLevel())
             {
-                DataManager.Instance().Save();
+                ChangeLevel(-1);
             }
         }
+
+        public bool isThereANextLevel()
+        {
+            var levels = _levelCategories[_currentLevelData.CategoryNumber].packs[_currentLevelData.PackNumber].levels.ToString().Split('\n');
+            return _currentLevelData.LevelNumber + 1 < levels.Length - 1 && !NextLevelBlocked();
+        }
+        
+        public void NextLevel()
+        {
+            
+            if(isThereANextLevel())
+            {
+                ChangeLevel(+1);
+            }
+        }
+
+        private bool NextLevelBlocked()
+        {
+            bool blocked = _levelCategories[_currentLevelData.CategoryNumber].packs[_currentLevelData.PackNumber].blocked;
+            if (blocked)
+            {
+                DataManager.Instance().LoadLevel(GameManager.Instance().GetCategoryName(_currentLevelData.CategoryNumber), _currentLevelData.PackNumber, _currentLevelData.LevelNumber, out int steps, out bool perfect);
+                return steps == -1;
+            }
+            return blocked;
+        }
+
+        private void ChangeLevel(int step)
+        {
+            var newLevelData = new LevelData();
+
+            newLevelData.CategoryNumber = _currentLevelData.CategoryNumber;
+            newLevelData.PackNumber = _currentLevelData.PackNumber;
+            newLevelData.LevelNumber = _currentLevelData.LevelNumber+step;
+            newLevelData.BestSolve = 0;
+            newLevelData.State = LevelState.UNSOLVED; //TODO
+            newLevelData.Color = _levelCategories[newLevelData.CategoryNumber].color;
+            newLevelData.Data = _levelCategories[newLevelData.CategoryNumber].packs[newLevelData.PackNumber].levels.ToString().Split('\n')[newLevelData.LevelNumber];
+
+            _currentLevelData = newLevelData;
+            _levelManager.CreateLevel(_currentLevelData);
+        }
+
 
         public Theme getActualTheme() { return _theme; }
 
         public LevelSelectorManager GetLevelSelectorManager() { return _levelSelectorManager; }
         public LevelManager GetLevelManager() { return _levelManager; }
         public BoardManager GetBoardManager() { return _boardManager; }
-        public Category[] GetCategories()
-        {
-            return _levelCategories;
-        }
+        public Category[] GetCategories() { return _levelCategories; }
 
+        public string GetCategoryName(int category)
+        {
+            if (category < 0 || category >= _levelCategories.Length) return "";
+            return _levelCategories[category].categoryName;
+        }
         public void UseHint()
         {
             _hints--;
@@ -156,14 +181,21 @@ namespace FlowFree
             return false;
         }
 
-        public void FinishLevel(int steps)
+        public void FinishLevel(int steps, int minimumSteps)
         {
-            DataManager.Instance().FinishLevel(_levelCategories[levelCat].categoryName, levelPack, levelNum, steps);
+            DataManager.Instance().FinishLevel(_currentLevelData, steps, minimumSteps);
+            //DataManager.Instance().FinishLevel(_levelCategories[_currentLevelData.CategoryNumber].categoryName, _currentLevelData.PackNumber, _currentLevelData.LevelNumber, steps);
         }
 
         public void SetClues(int clues)
         {
             _hints = clues;
         }
+
+        public void SetLevelData(LevelData data)
+        {
+            _currentLevelData = data;
+        }
+        public LevelData GetLevelData() { return _currentLevelData; }
     }
 }

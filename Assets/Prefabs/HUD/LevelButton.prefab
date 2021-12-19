@@ -147,6 +147,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a5f5bde8e423ee4bb5559702a355fca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  button: {fileID: 1528397391271753327}
   _buttonText: {fileID: 1157665105452564963}
   _tick: {fileID: 3400738200889836377}
 --- !u!1 &3451386930982603216

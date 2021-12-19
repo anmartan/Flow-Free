@@ -45,10 +45,11 @@ namespace FlowFree
         
         private BoardManager _boardManager;                     // Instance of the boardManager, so that it is not necessary to call the Game Manager in every Update.
         private Map _currentMap;                                // Map that is currently being played.
-        private LevelData _currentLevel;                        // Information about the level that is being currently played.
-
+        private LevelData _currentLevelData;
+        
         public void CreateLevel(LevelData data)
         {
+            _currentLevelData = data;
             _currentMap = new Map();
 
             if (_currentMap.loadMap(data.Data))
@@ -64,6 +65,9 @@ namespace FlowFree
                 ResetMovements();
                 UpdatePipePercentage(0);
                 UpdateHintsButton();
+
+                _previousLevelButton.interactable = GameManager.Instance().IsThereAPreviousLevel();
+                _nextLevelButton.interactable = GameManager.Instance().isThereANextLevel();
             }
             else Debug.LogError("Nivel incorrecto");
         }
@@ -100,9 +104,17 @@ namespace FlowFree
         {
             _boardManager.CreateBoard(_currentMap);
         }
+
+        /*
+        R:Se lo tienes que pedir al GM se supone que este no sabe quién es, ni quién hay antes o después
+        */
+        public void PreviousLevel()
+        {
+            GameManager.Instance().PreviousLevel();
+        }
         public void NextLevel()
         {
-            
+            GameManager.Instance().NextLevel();
         }
 
         public void ResetMovements()
@@ -112,7 +124,8 @@ namespace FlowFree
         public void UpdateMovements(int addition)
         {
             _playerMovements += addition;
-            _stepsText.text = "Steps: " + _playerMovements;
+            string best = (_currentLevelData.BestSolve != -1) ? _currentLevelData.BestSolve.ToString() : "-";
+            _stepsText.text = "Steps: " + _playerMovements + " | Best: " + best;
         }
 
         public void UpdatePipePercentage(int newPercentage)
@@ -140,7 +153,7 @@ namespace FlowFree
         private void FinishLevel()
         {
             GameManager.Instance().PlayIntersticialAd();
-            GameManager.Instance().FinishLevel(_playerMovements);
+            GameManager.Instance().FinishLevel(_playerMovements, _currentMap.getFlowsNumber());
         }
 
         public void GetHintsByWatchingAds()

@@ -14,3 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   packName: 8x8 Manias
   levels: {fileID: 4900000, guid: 445da626d427f6f4b9ad0b28563ebb62, type: 3}
+  blocked: 1

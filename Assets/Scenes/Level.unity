@@ -280,8 +280,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 919888633}
-        m_TargetAssemblyTypeName: FlowFree.GameManager, Assembly-CSharp
+      - m_Target: {fileID: 1389713200}
+        m_TargetAssemblyTypeName: FlowFree.LevelManager, Assembly-CSharp
         m_MethodName: NextLevel
         m_Mode: 1
         m_Arguments:
@@ -886,17 +886,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 604294762}
   m_CullTransparentMesh: 1
---- !u!114 &919888633 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 7451636109603945109, guid: 9740443e993334741b3e8daaf4cbf013, type: 3}
-  m_PrefabInstance: {fileID: 7451636109307467884}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7fd4e3506dab1904f985f06755b56777, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1026346284
 GameObject:
   m_ObjectHideFlags: 0
@@ -2035,8 +2024,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 919888633}
-        m_TargetAssemblyTypeName: FlowFree.GameManager, Assembly-CSharp
+      - m_Target: {fileID: 1389713200}
+        m_TargetAssemblyTypeName: FlowFree.LevelManager, Assembly-CSharp
         m_MethodName: PreviousLevel
         m_Mode: 1
         m_Arguments:

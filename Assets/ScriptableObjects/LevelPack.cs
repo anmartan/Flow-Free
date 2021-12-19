@@ -9,4 +9,7 @@ public class LevelPack : ScriptableObject
 
 	[Tooltip("File that contains the levels for this pack.")]
 	public TextAsset levels;
+
+	// TODO
+	public bool blocked;
 }

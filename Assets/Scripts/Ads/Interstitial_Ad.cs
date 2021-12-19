@@ -13,9 +13,7 @@ namespace FlowFree
         void Awake()
         {
             // Get the Ad Unit ID for the current platform:
-            _adUnitId = (Application.platform == RuntimePlatform.IPhonePlayer)
-                ? _iOSAdUnitId
-                : _androidAdUnitId;
+            _adUnitId = _androidAdUnitId;
         }
 
         // Load content to the Ad Unit:
