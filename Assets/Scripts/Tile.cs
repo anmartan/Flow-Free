@@ -1,4 +1,3 @@
-using System.IO.Compression;
 using UnityEngine;
 
 
@@ -38,6 +37,19 @@ namespace FlowFree
         private Color _color = Color.black;                     // The color that index corresponds to, when using a specific theme.
         private bool _gap;                                      // Whether the tile is usable or not.
 
+        
+        /// <summary>
+        /// Dissolves the tile, partly or completely.
+        /// </summary>
+        /// <param name="onlyExit">Whether the tile should be dissolved partly, or not.</param>
+        public void Dissolve(bool onlyExit)
+        {
+            ClearWay(_exitFlow);
+            if (!onlyExit) ClearWay(_entranceFlow);
+
+            // If it is empty as a result, its color is reset.
+            if (!_entranceFlow.enabled && !_exitFlow.enabled && !_circle.enabled) _colorIndex = -1;
+        }
         
         // ----- SETTERS ----- //
         
@@ -135,7 +147,16 @@ namespace FlowFree
         
         // ----- GETTERS ----- //
         
-        // TODO: Comment and organize
+        public int GetColorIndex() { return _colorIndex; }
+        public bool IsCircle() { return _circle.enabled; }
+        public bool IsFullyConnected() { return _connections == 2; }
+        public bool IsGap() { return _gap; }
+        
+        /// <summary>
+        /// Checks if the wall in the direction given is active.
+        /// </summary>
+        /// <param name="direction">Direction of the wall.</param>
+        /// <returns>true if the wall is active; false otherwise.</returns>
         public bool IsWallActive(Vector2Int direction)
         {
             if (direction == Vector2Int.up) return _northWall.enabled;
@@ -144,23 +165,20 @@ namespace FlowFree
             return _westWall.enabled;
         }
         
-        public bool IsGap() { return _gap; }
-        public bool IsFullyConnected() { return _connections == 2; }
-        public int GetColorIndex() { return _colorIndex; }
-        public bool IsCircle() { return _circle.enabled; }
 
-        public void Dissolve(bool onlyExit)
-        {
-            ClearWay(_exitFlow);
-            if (!onlyExit) ClearWay(_entranceFlow);
-
-            if (!_entranceFlow.enabled && !_exitFlow.enabled && !_circle.enabled) _colorIndex = -1;
-        }
+        // ----- AUXILIARY METHODS ----- //
         
+        /// <summary>
+        /// Removes the given flow. If it was active, the tile loses one of its connections.
+        /// </summary>
+        /// <param name="sprite">Sprite of the flow that will be removed (entrance or flow flow).</param>
         private void ClearWay(SpriteRenderer sprite)
         {
-            sprite.transform.rotation = Quaternion.identity;
+            // Checks if it was active, to update the number of connections.
             if (sprite.enabled) _connections--;
+            
+            // Resets its rotation and disables it.
+            sprite.transform.rotation = Quaternion.identity;
             sprite.enabled = false;            
         }
     }

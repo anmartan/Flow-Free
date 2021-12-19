@@ -47,7 +47,7 @@ namespace FlowFree
                 _instance._boardManager = _boardManager;
                 _instance._levelSelectorManager = _levelSelectorManager;
                 
-                if(_levelSelectorManager) _levelSelectorManager.ShowPages();
+                if(_levelSelectorManager) _levelSelectorManager.StartShowingPages();
                 Destroy(this);
             }
 

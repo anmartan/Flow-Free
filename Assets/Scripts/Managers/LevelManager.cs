@@ -76,11 +76,11 @@ namespace FlowFree
                 _levelText.text = "Level " + (data.LevelNumber + 1);
                 _levelText.color = data.Color;
 
-                _sizeText.text = _currentMap.getWidth() + "x" + _currentMap.getHeight();
+                _sizeText.text = _currentMap.GetWidth() + "x" + _currentMap.GetHeight();
                 if (_currentLevelData.BestSolve != -1)
                 {
                     _bestMovements = _currentLevelData.BestSolve.ToString();
-                    if(_currentLevelData.BestSolve == _currentMap.getFlowsNumber()) _perfectSolveIcon.SetActive(true);
+                    if(_currentLevelData.BestSolve == _currentMap.GetFlowsNumber()) _perfectSolveIcon.SetActive(true);
                     else _solveIcon.SetActive(true);
                 }
                 else _bestMovements = "-";
@@ -163,7 +163,7 @@ namespace FlowFree
 
         public void UpdateFlowsText(int flowsCompleted)
         {
-            _flowsText.text = "Flows: " + flowsCompleted + " / " + _currentMap.getFlowsNumber();
+            _flowsText.text = "Flows: " + flowsCompleted + " / " + _currentMap.GetFlowsNumber();
         }
         
         public void GiveHint()
@@ -185,7 +185,7 @@ namespace FlowFree
             _hintsButton.interactable = false;
             
             GameManager.Instance().PlayIntersticialAd();
-            GameManager.Instance().FinishLevel(_playerMovements, _currentMap.getFlowsNumber());
+            GameManager.Instance().FinishLevel(_playerMovements, _currentMap.GetFlowsNumber());
             
             SetPanelActive(true);
         }
@@ -220,7 +220,7 @@ namespace FlowFree
             
             // The text depends on whether the solve was a perfect one.
             string title;
-            if (_playerMovements == _currentMap.getFlowsNumber()) title = "Perfect!";
+            if (_playerMovements == _currentMap.GetFlowsNumber()) title = "Perfect!";
             else title = "Congratulations";
             _panelTitle.text = title;
 

@@ -54,8 +54,8 @@ namespace FlowFree
             _levelManager = GameManager.Instance().GetLevelManager();
             
             
-            _width = map.getWidth();
-            _height = map.getHeight();
+            _width = map.GetWidth();
+            _height = map.GetHeight();
             _tiles = new Tile[_height, _width];
             List<Tuple<Vector2Int, Vector2Int>> walls = map.GetWalls();
             List<Vector2Int> gaps = map.GetGaps();
@@ -67,14 +67,14 @@ namespace FlowFree
             _touching = false;
             
             // Creates the lists that will contain information about the board: the final solution, the current state and the previous state.
-            _solution = new List<Vector2Int>[map.getFlowsNumber()];
-            _hintsGiven = new bool[map.getFlowsNumber()];
+            _solution = new List<Vector2Int>[map.GetFlowsNumber()];
+            _hintsGiven = new bool[map.GetFlowsNumber()];
             
-            _currentState = new List<Vector2Int>[map.getFlowsNumber()];
-            _intermediateState = new List<Vector2Int>[map.getFlowsNumber()];
-            _lastState = new List<Vector2Int>[map.getFlowsNumber()];
+            _currentState = new List<Vector2Int>[map.GetFlowsNumber()];
+            _intermediateState = new List<Vector2Int>[map.GetFlowsNumber()];
+            _lastState = new List<Vector2Int>[map.GetFlowsNumber()];
 
-            for (int i = 0; i < map.getFlowsNumber(); i++)
+            for (int i = 0; i < map.GetFlowsNumber(); i++)
             {
                 _solution[i] = new List<Vector2Int>();
                 _hintsGiven[i] = false;
@@ -105,9 +105,9 @@ namespace FlowFree
 
             // Sets the colors for each circle. Gets the _color according to the theme,
             // And paints the circles at both the beginning and the end of the flow with such _color.
-            for (int i = 0; i < map.getFlowsNumber(); i++)
+            for (int i = 0; i < map.GetFlowsNumber(); i++)
             {
-                _solution[i] = map.getFlows()[i];
+                _solution[i] = map.GetFlows()[i];
 
                 _tiles[_solution[i][0].y, _solution[i][0].x].SetCircle(i);
                 _tiles[_solution[i][_solution[i].Count - 1].y, _solution[i][_solution[i].Count - 1].x].SetCircle(i);
